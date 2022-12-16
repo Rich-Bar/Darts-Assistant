@@ -6,10 +6,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>Darts Assistant</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 
 <body>
-    <section id="board" style="height: 75vh;display: flex;align-items: center;justify-content: center;margin: 2em;"><img src="assets/img/Dartboard_unlabeled.svg" style="pointer-events: none;height: 100%;"></section>
+    <section class="game"><img class="board" src="assets/img/Dartboard_unlabeled.svg" style="height: min(90vw, 90vh);width: min(90vw, 90vh);object-fit: contain;padding: 2em;">
+        <div>
+            <div class="accordion" role="tablist" id="accordion-1">
+                <div class="accordion-item player">
+                    <h2 class="accordion-header" role="tab"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-1 .item-1" aria-expanded="false" aria-controls="accordion-1 .item-1">Player XY<span class="stats"><span class="remaining">501</span><span class="average">Avrg: 66.6</span></span></button></h2>
+                    <div class="accordion-collapse collapse item-1" role="tabpanel" data-bs-parent="#accordion-1">
+                        <div class="accordion-body"></div>
+                    </div>
+                </div>
+                <div class="accordion-item player">
+                    <h2 class="accordion-header" role="tab"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-1 .item-2" aria-expanded="false" aria-controls="accordion-1 .item-2">Player Z<span class="stats"><span class="remaining">501</span><span class="average">Avrg: 66.6</span></span></button></h2>
+                    <div class="accordion-collapse collapse item-2" role="tabpanel" data-bs-parent="#accordion-1">
+                        <div class="accordion-body"></div>
+                    </div>
+                </div>
+                <div class="accordion-item player">
+                    <h2 class="accordion-header" role="tab"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-1 .item-3" aria-expanded="true" aria-controls="accordion-1 .item-3">Player 0<span class="stats"><span class="remaining">501</span><span class="average">Avrg: 66.6</span></span></button></h2>
+                    <div class="accordion-collapse collapse show item-3" role="tabpanel" data-bs-parent="#accordion-1">
+                        <div class="accordion-body"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
     <script src="assets/js/game.js"></script>
