@@ -17,8 +17,11 @@ section {
 }
 
 .player .stats {
-  margin: 0 0.2em;
-  padding: 0.2em;
+  margin-left: 2em;
+  padding: 0.3em;
+  background: #333;
+  border-radius: 0.3em;
+  float: right;
 }
 
 .player .stats .remaining {
@@ -32,5 +35,41 @@ section {
 
 .player .stats .average {
   font-size: .7em;
+  color: #ccc;
+}
+
+.throw-input-group > input {
+  width: 4em;
+  max-width: 4em;
+  text-align: center;
+}
+
+.throw-input-group > button > input::-webkit-outer-spin-button, .throw-input-group > button > input::-webkit-inner-spin-button {
+  -moz-appearance: textfield;
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.throw-input-group > button > input {
+  width: 3em;
+  border: none;
+  border-bottom: 1px solid #fff4;
+  background: #9991;
+}
+
+section.game > .board > span {
+  position: absolute;
+  filter: invert(100%);
+  mix-blend-mode: difference;
+  min-width: 4%;
+  min-height: 4%;
+  max-width: 4%;
+  max-height: 5%;
+  background-image: url("../../assets/img/target-svgrepo-com.svg");
+}
+
+section.game > .board {
+  position: relative;
+  margin: 2em;
 }
 
