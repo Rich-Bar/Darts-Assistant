@@ -68,6 +68,11 @@ $(function(){
     }else if(database.currentGame == null){
 
     }
+    //Show Screen create User
+    $('.create-user-icon').click(()=>{
+        $("section.user-details > h1 > span").text("Create new");
+        $("section.user-details").removeClass('visually-hidden');
+    });
     //Continue on Enter in Button-Input
     $("section.game .accordion-collapse .input-group > input").pressEnter((e)=>{
         $(e.target).attr('value', $(e.target).val());
@@ -130,6 +135,11 @@ $(function(){
         }else{
             $("section.game .accordion-collapse.show .input-group > button > input").focus();
         }
+    });
+
+    //Player Finished Throw
+    $("section.game .accordion-collapse.show .input-group > button").click((e)=>{
+
     });
 });
 
