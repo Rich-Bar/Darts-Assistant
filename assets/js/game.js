@@ -8,6 +8,7 @@ window.database = {
             id: rndGameId,
             mode: "501",
             started: new Date(),
+            winners: [],
             turns: {rndPlayerUserId: [{
                 throw1:{
                     score: 180,
@@ -25,7 +26,6 @@ window.database = {
                 average: ()=>{return score()/3;}
             }]}
         },
-        winners: []
     },
     players: {
         [rndPlayerUserId]: {
@@ -64,10 +64,42 @@ $(function(){
     //First Start of Assistant
     if(database == null){
         
-    //Show Create Game Screen
-    }else if(database.currentGame == null){
+    //Show Game Screen
+    }else if(database.currentGame != null){
 
+        
     }
+    //Section-Home Buttons
+    $('section.home .new-game').click(()=>{
+        $('section.game-creator').removeClass('visually-hidden');
+        $('section.user-selector').removeClass('visually-hidden');
+    });
+    $('section.home .view-stats').click(()=>$('section.stats').removeClass('visually-hidden'));
+    $('section.home .save-db').click(()=>{});
+    $('section.home .load-db').click(()=>{});
+    //Section-Game-creator Buttons
+    $('section.game-creator i.edit-mode').click(()=>{
+        $("section.mode-details > h1 > span").text("Edit");
+        $('section.mode-details').removeClass('visually-hidden');
+    });
+    $('section.game-creator i.create-mode').click(()=>{
+        $("section.mode-details > h1 > span").text("Create new");
+        $('section.mode-details').removeClass('visually-hidden');
+    });
+    $('section.game-creator button').click(()=>{
+        $('section:not(.home)').addClass('visually-hidden');
+        $('section.game').removeClass('visually-hidden');
+        e.preventDefault();
+    });
+    //Section-User-selector Buttons
+    $('section.user-selector div.player-selection > span').click((e)=>{
+        $(e.target).toggleClass('selected');
+        var playerListPreview = $('section.game-creator .player-list-preview');
+        playerListPreview.html('');
+        $('section.user-selector div.player-selection > span').each((i, v) => {
+            if($(v).hasClass('selected'))playerListPreview.append("<li data-uuid='"+$(v).find('span').data('uuid')+"'>"+ $(v).find('span').text() +"</li>");
+        });
+    });
     //Show Screen create User
     $('.create-user-icon').click(()=>{
         $("section.user-details > h1 > span").text("Create new");
@@ -139,7 +171,8 @@ $(function(){
 
     //Player Finished Throw
     $("section.game .accordion-collapse.show .input-group > button").click((e)=>{
-
+        $("section.game > .board > span").remove();
+        setTimeout($("section.game .accordion-collapse.show .input-group > button > input").focus(),100);
     });
 });
 

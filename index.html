@@ -13,9 +13,9 @@
 </head>
 
 <body>
-    <section class="game visually-hidden"><span class="board"><img src="assets/img/Dartboard_unlabeled.svg" style="height: min(90vw, 90vh);width: min(90vw, 90vh);object-fit: contain;"></span>
+    <section class="game"><span class="board"><img src="assets/img/Dartboard_unlabeled.svg" style="height: min(90vw, 90vh);width: min(90vw, 90vh);object-fit: contain;"></span>
         <div>
-            <div class="accordion player-selection" role="tablist" id="player-accordion">
+            <div class="accordion player-overview" role="tablist" id="player-accordion">
                 <div class="accordion-item player">
                     <h2 class="accordion-header" role="tab"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#player-accordion .item-1" aria-expanded="false" aria-controls="player-accordion .item-1">Player XY<span class="stat"><span class="remaining">501</span><span class="average">Avrg: 66.6</span></span><span class="stat"><span class="set">S.:</span>1</span><span class="stat"><span class="leg">L.:</span>1</span></button></h2>
                     <div class="accordion-collapse collapse item-1" role="tabpanel" data-bs-parent="#player-accordion">
@@ -46,21 +46,44 @@
     <section class="game-creator">
         <h1>New Game</h1>
         <hr>
-        <form class="d-xxl-flex align-items-xxl-center">
-            <div>
-                <fieldset><label class="form-label">Mode<i class="fa fa-edit" style="margin: 0 0.5em;"></i><i class="fa fa-plus-square" style="margin: 0 0.5em;"></i></label><select>
-                        <option value="501">501</option>
-                        <option value="701">701</option>
-                    </select></fieldset>
-            </div><button class="btn btn-success" type="submit" style="color: #000;font-weight: 600;width: max-content;padding: 0.7em 2.25em;">Start Game!</button>
-        </form>
+        <div>
+            <fieldset><label class="form-label">Mode<i class="fa fa-edit edit-mode" style="margin: 0 0.5em;"></i><i class="fa fa-plus-square create-mode"></i></label><select>
+                    <option value="501">501</option>
+                    <option value="701">701</option>
+                </select></fieldset>
+            <div style="padding: 1em;">
+                <p style="margin-bottom: 0;">Selected Players:</p>
+                <ul class="player-list-preview"></ul>
+            </div>
+        </div><button class="btn btn-success" type="button" style="color: #000;font-weight: 600;width: max-content;padding: 0.7em 2.25em;">Start Game!</button>
         <hr><small class="form-text">Select Players in Section below</small>
+    </section>
+    <section class="mode-details visually-hidden">
+        <h1 style="margin-top: 0.5em;"><span>Create/Edit</span>&nbsp;Mode</h1>
+        <hr>
+        <div class="player-creator">
+            <form style="display: flex;flex-wrap: wrap;">
+                <fieldset class="d-xxl-flex align-items-xxl-center">
+                    <legend class="text-center">General Info</legend><label class="form-label">Starting Number</label><input type="number" style="width: 100%;">
+                    <div style="display: inline-flex;">
+                        <div class="form-check" style="padding-right: 0.3em;border-right: 1px solid #fff2;"><input class="form-check-input" type="checkbox" id="formCheck-1" style="background: #0003;"><label class="form-check-label" for="formCheck-1">Best of</label></div><label class="form-label" style="margin-left: 0.3em;">Legs</label>
+                    </div><input type="number" style="width: 100%;">
+                    <div class="form-check"><input class="form-check-input" type="checkbox" id="formCheck-3" style="background: #0003;"><label class="form-check-label" for="formCheck-3">Double Out</label></div>
+                </fieldset>
+                <fieldset class="d-xxl-flex align-items-xxl-center">
+                    <legend style="text-align: center;">&nbsp;</legend><label class="form-label" style="text-align: center;">Mode Name</label><input type="text" style="width: 100%;">
+                    <div class="text-center" style="display: inline-flex;">
+                        <div class="form-check" style="padding-right: 0.3em;border-right: 1px solid #fff2;"><input class="form-check-input" type="checkbox" id="formCheck-2" style="background: #0003;"><label class="form-check-label" for="formCheck-2">Best of</label></div><label class="form-label" style="margin-left: 0.3em;">Sets</label>
+                    </div><input type="number" style="width: 100%;">
+                </fieldset>
+            </form>
+        </div>
     </section>
     <section class="user-selector">
         <h1>Available Players<i class="fas fa-user-plus create-user-icon" style="position: absolute;right: 60px;"></i></h1>
         <hr>
         <p class="known-player-count">Found&nbsp;<span>0</span> players</p>
-        <div class="player-selection"><span class="d-xxl-flex align-items-xxl-center"><img><span>Username</span></span><span class="d-xxl-flex align-items-xxl-center selected"><img><span>Username</span></span></div>
+        <div class="player-selection"><span class="d-xxl-flex align-items-xxl-center"><img><span>Username</span></span><span class="d-xxl-flex align-items-xxl-center"><img><span>Username 234</span></span></div>
     </section>
     <section class="user-details visually-hidden">
         <h1 style="margin-top: 0.5em;"><span>Create/Edit</span> Player</h1>
@@ -75,6 +98,13 @@
                 </fieldset>
             </form>
         </div>
+    </section>
+    <section class="home">
+        <h1><i class="fa fa-home" style="position: absolute;left: 1em;"></i>Darts Assistant</h1>
+        <hr>
+        <div style="filter: brightness(72%) contrast(117%) saturate(77%);"><button class="btn btn-info save-db" type="button" style="font-weight: 600;width: max-content;padding: 0.7em 2.25em;">Save Database</button><button class="btn btn-secondary load-db" type="button" style="font-weight: 600;width: max-content;padding: 0.7em 2.25em;">Load Database</button></div>
+        <div><button class="btn btn-success new-game" type="button" style="color: #000;font-weight: 800;width: max-content;padding: 0.7em 2.25em;text-shadow: none;">Start Game!</button><button class="btn btn-secondary view-stats" type="button" style="font-weight: 600;width: max-content;padding: 0.7em 2.25em;">View Statistics</button></div>
+        <hr><small class="form-text">Created by Marco Dittrich @ DiLight Entertainment UG</small>
     </section>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
