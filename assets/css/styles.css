@@ -1,6 +1,8 @@
 section.game {
   flex-direction: row!important;
   flex-wrap: wrap;
+  padding: 1em 2em;
+  margin: 1em 2em;
 }
 
 section {
@@ -72,7 +74,7 @@ section.game > .board > span {
 
 section.game > .board {
   position: relative;
-  margin: 2em;
+  margin: 1em 2em;
 }
 
 section.game .player button.accordion-button::after {
@@ -180,10 +182,25 @@ section.home > div > * {
 }
 
 section:not(.visually-hidden) ~ section.home {
-  display: none;
+  /*display: none;*/
 }
 
 .game-creator > div {
   display: flex;
+}
+
+fieldset > div {
+  margin-bottom: 0px!important;
+}
+
+.fa.fa-close.close-section {
+  position: absolute;
+  left: 1em;
+  transform: scale(0.5);
+  transform-origin: 50% 50%;
+}
+
+input[type="checkbox"]:not(:checked) {
+  filter: invert(80%);
 }
 

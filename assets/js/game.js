@@ -9,42 +9,18 @@ window.database = {
             mode: "501",
             started: new Date(),
             winners: [],
-            turns: {rndPlayerUserId: [{
-                throw1:{
-                    score: 180,
-                    position: {x:0, y:0}
-                },
-                throw2:{
-                    score: 80,
-                    position: {x:30, y:0}
-                },
-                throw3:{
-                    score: 18,
-                    position: {x:0, y:70}
-                },
-                score: ()=>{return throw1.score + throw2.score + throw3.score;},
-                average: ()=>{return score()/3;}
-            }]}
+            turns: []
         },
     },
-    players: {
-        [rndPlayerUserId]: {
+    players: [{
             username: "Gustav",
             id: rndGameId,
             started: new Date(),
             image: "",
             gameIds:[rndGameId]
-        }
-    },
-    modes: {
-        ["501"]: {
-            name: "501",
-            doubeOut: true,
-            start: 501,
-            maxLegs: 1,
-            maxSets: 0
-        }
-    },
+        }],
+    modes: []
+    
     
 }
 
@@ -74,31 +50,151 @@ $(function(){
         $('section.game-creator').removeClass('visually-hidden');
         $('section.user-selector').removeClass('visually-hidden');
     });
-    $('section.home .view-stats').click(()=>$('section.stats').removeClass('visually-hidden'));
-    $('section.home .save-db').click(()=>{});
-    $('section.home .load-db').click(()=>{});
+    $('section.home .view-stats').click(()=>{
+        $('section.stats').removeClass('visually-hidden');
+    });
+    $('section.home .save-db').click(()=>{
+        let option = $('section.home .database select').val();
+        if(option === "clipboard"){
+            navigator.clipboard.writeText(JSON.stringify(window.database));
+        }else if(option === "file"){
+            new JavascriptDataDownloader(window.database).download();
+        }else if(option === "browser"){
+            localStorage.setItem('dartsAssistantDB', JSON.stringify(window.database));
+        }
+    });
+    $('section.home .load-db').click(()=>{
+        let option = $('section.home .database select').val();
+        if(option === "clipboard"){
+            window.database = JSON.parse(navigator.clipboard.readText());
+        }else if(option === "file"){
+            $('section.home .database .fileOpener').trigger('click');
+        }else if(option === "browser"){
+            window.database = JSON.parse(localStorage.getItem('dartsAssistantDB'));
+        }
+    });
     //Section-Game-creator Buttons
     $('section.game-creator i.edit-mode').click(()=>{
+        //Open Edit Mode
         $("section.mode-details > h1 > span").text("Edit");
         $('section.mode-details').removeClass('visually-hidden');
+        let selectedMode = database.modes[$('.game-creator .available-modes').val()];
+        
+        $('section.mode-details .modeName').val(selectedMode.name);
+        $('section.mode-details .startNr').val(selectedMode.start);
+        $('section.mode-details .setNr').val(selectedMode.setCount);
+        $('section.mode-details .legNr').val(selectedMode.legCount);
+        $('section.mode-details .bestOfSets input').prop('checked', selectedMode.bestOfSets);
+        $('section.mode-details .bestOfLegs input').prop('checked', selectedMode.bestOfLegs);
+        $('section.mode-details .doubleOut input').prop('checked', selectedMode.doubeOut);
+        $('section.mode-details .lastChance input').prop('checked', selectedMode.lastChance);
     });
     $('section.game-creator i.create-mode').click(()=>{
+        //Open New Mode
         $("section.mode-details > h1 > span").text("Create new");
         $('section.mode-details').removeClass('visually-hidden');
     });
     $('section.game-creator button').click(()=>{
+        //Start Game
         $('section:not(.home)').addClass('visually-hidden');
+        $('section.game .player-overview').html('');
+        let i = 0;
+        for(playerName in selectedPlayers){
+            let player = database.players.find((p)=>p.username==playerName);
+            $('section.game .player-overview').append('<div class="accordion-item player" data-id='+player.id+'>'+`
+                <h2 class="accordion-header" role="tab"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#player-accordion .item-`+i+`" aria-expanded="false" aria-controls="player-accordion .item-`+i+`">`+playerName+`<span class="stat"><span class="remaining"></span><span class="average"></span></span><span class="stat">S.:<span class="set"></span></span><span class="stat">L.:<span class="leg"></span></span></button></h2>
+                <div class="accordion-collapse collapse item-`+i+`" role="tabpanel" data-bs-parent="#player-accordion">
+                    <div class="accordion-body">
+                        <div class="input-group input-group-sm throw-input-group"><input class="border rounded-pill" type="number" min="0" max="180"><input class="border rounded-pill" type="number" min="0" max="180"><input class="border rounded-pill" type="number" min="0" max="180"><button class="btn btn-primary border rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#player-accordion .item-1" aria-expanded="false" aria-controls="player-accordion .item-`+i+`"><input type="number" placeholder="Sum">&nbsp; Done</button></div>
+                    </div>
+                </div>
+            </div>`);
+            i++;
+        }
         $('section.game').removeClass('visually-hidden');
+        window.database.currentGame = {
+            id: generateUUID(),
+            mode: database.modes[$('.game-creator .available-modes').val()],
+            started: new Date(),
+            winners: [],
+            turns: []
+        };
         e.preventDefault();
     });
+    $("section.game-creator i.close-section").click(()=>{
+        //Close New Game
+        $("section.game-creator").addClass("visually-hidden");
+        $("section.user-selection").addClass("visually-hidden");
+    });
     //Section-User-selector Buttons
+    $('section.user-selector .create-user-icon').click(()=>{
+        //Open Create User
+        $('section.user-details h1 > span').text('Create');
+        $('section.user-details').removeClass('visually-hidden');
+    });
+    $('section.user-selector div.player-selection > span > span > i').click((e)=>{
+        //Open Edit User
+        window.selectedPlayers = [...window.selectedPlayers, $(v).find('span').text()];
+                
+    })
     $('section.user-selector div.player-selection > span').click((e)=>{
+        //Select User
         $(e.target).toggleClass('selected');
         var playerListPreview = $('section.game-creator .player-list-preview');
         playerListPreview.html('');
+        window.selectedPlayers = window.selectedPlayers ||[];
         $('section.user-selector div.player-selection > span').each((i, v) => {
-            if($(v).hasClass('selected'))playerListPreview.append("<li data-uuid='"+$(v).find('span').data('uuid')+"'>"+ $(v).find('span').text() +"</li>");
+            if($(v).hasClass('selected')){
+                window.selectedPlayers = [...window.selectedPlayers, $(v).find('span').text()];
+                playerListPreview.append("<li data-uuid='"+$(v).find('span').data('uuid')+"'>"+ $(v).find('span').text() +"</li>");
+            }else{
+                window.selectedPlayers.remove($(v).find('span').text());
+            }
         });
+    });
+    //Section User Details
+    $('section.user-details .save-btn').click((e)=>{
+        window.database.players.push({
+            username: $('section.user-details input[name="username"]').val(),
+            id: generateUUID(),
+            started: new Date(),
+            image: "",
+            gameIds:[]
+        });
+    });
+    $('section.user-details .cancel-btn').click((e)=>{
+        $('section.user-details').addClass('visually-hidden');
+    });
+    $('section.user-details .delete-btn').click((e)=>{
+        window.database.players.remove(database.players.find((p)=>p.username==$('section.user-details input[name="username"]').val()));
+        $('section.user-details').addClass('visually-hidden');
+        e.preventDefault();
+    });
+    //Section Mode Details
+    $('section.mode-details .save-btn').click((e)=>{
+        $('section.mode-details').addClass('visually-hidden');
+        e.preventDefault();
+        window.database.modes[$('section.mode-details .modeName').val()] = {
+            name: $('section.mode-details .modeName').val(),
+            doubeOut: $('section.mode-details .doubleOut input[type="checkbox"]').is(':checked'),
+            lastChance: $('section.mode-details .lastChance input[type="checkbox"]').is(':checked'),
+            start: $('section.mode-details .startingNr').val(),
+            bestOfLegs: $('section.mode-details .bestOfLegs input[type="checkbox"]').is(':checked'),
+            legCount: $('section.mode-details .legNr').val(),
+            bestOfSets: $('section.mode-details .bestOfSets input[type="checkbox"]').is(':checked'),
+            setCount: $('section.mode-details .setNr').val()
+        };
+    });
+    $('section.mode-details .cancel-btn').click((e)=>{
+        $('section.mode-details').addClass('visually-hidden');
+        e.preventDefault();
+    });
+    $('section.mode-details .delete-btn').click((e)=>{
+        $('section.mode-details').addClass('visually-hidden');
+        let searchFor = $('section.game-creator .modeName').text();
+        modes.remove(searchFor);
+        $('section.game-creator .available-modes option[value="'+searchFor+'"]').remove();
+        e.preventDefault();
     });
     //Show Screen create User
     $('.create-user-icon').click(()=>{
@@ -154,6 +250,8 @@ $(function(){
         }
         //console.log(angle, distance,distance/(boardSize/2), fields[Math.floor(angle/18)]);
         console.log(scored);
+        let throwNr = $('section.game > .board > span').length;
+        //window.database.currentGame.
         //Place Position Marker
         let halfCrosshairSize = Math.floor(boardSize / 50);
         $('section.game > .board').append('<span style="top: '+ (-halfCrosshairSize+e.offsetY) +'px;left: '+ (-halfCrosshairSize + e.offsetX) +'px;"></span>');
@@ -168,11 +266,10 @@ $(function(){
             $("section.game .accordion-collapse.show .input-group > button > input").focus();
         }
     });
-
     //Player Finished Throw
     $("section.game .accordion-collapse.show .input-group > button").click((e)=>{
         $("section.game > .board > span").remove();
-        setTimeout($("section.game .accordion-collapse.show .input-group > button > input").focus(),100);
+        setTimeout($("section.game .accordion-collapse.show .input-group > button > input").focus());
     });
 });
 
@@ -191,3 +288,20 @@ function generateUUID() { // Public Domain/MIT
         return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
 }
+
+class JavascriptDataDownloader {
+    constructor(data={}) {
+        this.data = data;
+    }
+    download (type_of = "application/json", filename= "Darts-Assistant-Save.json") {
+        let body = document.body;
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([JSON.stringify(this.data, null, 2)], {
+            type: type_of
+        }));
+        a.setAttribute("download", filename);
+        body.appendChild(a);
+        a.click();
+        body.removeChild(a);
+    }
+} 
