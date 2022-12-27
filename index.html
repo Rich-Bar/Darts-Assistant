@@ -42,12 +42,13 @@
                 </div>
             </div>
         </div>
+        <footer style="position: fixed;left: 0;right: 0;bottom: 0;height: 20px;background: #444c;border-top: 1px solid #111;"></footer>
     </section>
     <section class="game-creator">
         <h1><i class="fa fa-close close-section"></i>New Game</h1>
         <hr>
         <div>
-            <fieldset><label class="form-label">Mode<i class="fa fa-edit edit-mode" style="margin: 0 0.5em;"></i><i class="fa fa-plus-square create-mode"></i></label><select class="available-modes" name="available-modes">
+            <fieldset><label class="form-label">Mode<i class="fa fa-edit edit-mode" style="margin: 0 0.5em;cursor: pointer;"></i><i class="fa fa-plus-square create-mode" style="cursor: pointer;"></i></label><select class="available-modes" name="available-modes">
                     <option value="501">501</option>
                     <option value="701">701</option>
                 </select></fieldset>
@@ -93,7 +94,7 @@
         <h1>Available Players<i class="fas fa-user-plus create-user-icon" style="position: absolute;right: 60px;"></i></h1>
         <hr>
         <p class="known-player-count">Found&nbsp;<span>0</span> players</p>
-        <div class="player-selection"><span class="d-xxl-flex align-items-xxl-center template"><img><span>Username 234<i class="fa fa-pencil edit-user" style="margin-left: 0.666em;"></i></span></span></div>
+        <div class="player-selection"><span class="d-xxl-flex align-items-xxl-center template"><img><span>Username 234<i class="fa fa-pencil edit-user" style="margin-left: 0.666em;pointer-events: all;cursor: pointer;"></i></span></span></div>
     </section>
     <section class="user-details">
         <h1 style="margin-top: 0.5em;"><span>Create/Edit</span> Player</h1>
@@ -113,15 +114,14 @@
     <section class="home">
         <h1><i class="fa fa-home" style="position: absolute;left: 1em;"></i>Darts Assistant</h1>
         <hr>
-        <div class="d-xxl-flex align-items-xxl-center database" style="filter: brightness(72%) contrast(117%) saturate(77%);"><button class="btn btn-info save-db" type="button" style="font-weight: 600;width: max-content;padding: 0.7em 2.25em;">Save Database</button><button class="btn btn-secondary load-db" type="button" style="font-weight: 600;width: max-content;padding: 0.7em 2.25em;">Load Database</button><input type="file" class="fileOpener" style="display: none;"><span style="margin-right: 5px;">Destination</span><select class="form-select-lg" style="padding-right: 0.5rem;margin-left: 5px;">
-                <option value="clipboard">Clipboard</option>
-                <option value="file">File</option>
-                <option value="browser">Browser</option>
-            </select></div>
+        <div class="d-xxl-flex align-items-xxl-end database" style="filter: brightness(72%) contrast(117%) saturate(77%);"><button class="btn btn-info save-db" type="button" style="font-weight: 600;width: max-content;padding: 0.7em 2.25em;">Save Database</button><button class="btn btn-secondary load-db" type="button" style="font-weight: 600;width: max-content;padding: 0.7em 2.25em;">Load Database</button><input type="file" class="fileOpener" style="display: none;"><span style="width: min-content;text-align: center;">Destination<select class="form-select-lg" style="padding-right: 0.5rem;font-size: 18px;padding-top: 10px;padding-bottom: 11px;">
+                    <option value="clipboard">Clipboard</option>
+                    <option value="file">File</option>
+                    <option value="browser">Browser</option>
+                </select></span></div>
         <div><button class="btn btn-success new-game" type="button" style="color: #000;font-weight: 800;width: max-content;padding: 0.7em 2.25em;text-shadow: none;">Start Game!</button><button class="btn btn-secondary view-stats" type="button" style="font-weight: 600;width: max-content;padding: 0.7em 2.25em;">View Statistics</button></div>
         <hr><small class="form-text">Created by Marco Dittrich @ DiLight Entertainment UG</small>
     </section>
-    <footer style="position: fixed;left: 0;right: 0;bottom: 0;height: 20px;background: #444c;border-top: 1px solid #111;"></footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/game.js"></script>

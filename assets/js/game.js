@@ -132,35 +132,59 @@ $(function(){
         $('section.user-details h1 > span').text('Create');
         $('section.user-details').removeClass('visually-hidden');
     });
-    $('section.user-selector div.player-selection > span > span > i').click((e)=>{
+    let editUser = function(e){
         //Open Edit User
-        window.selectedPlayers = [...window.selectedPlayers, $(v).find('span').text()];
-                
-    })
-    $('section.user-selector div.player-selection > span').click((e)=>{
+        let existing = database.players.find((p)=>p.username==$(e.target).parent().text());
+        if(existing != null){
+            $('section.user-details input[name="username"]').val(existing.username);
+            $('section.user-details input[name="uuid"]').val(existing.id);
+            $('section.user-details input[name="date-created"]').val(existing.started);
+            $("section.user-details img.profilePicture").attr('src', existing.image),
+            $('section.user-details input[name="all-games"]').val(existing.gameIds);
+        }
+        $('section.user-details').removeClass('visually-hidden');
+    }
+    $('section.user-selector div.player-selection > span > span > i').click(editUser);
+     let selectUser = function(e){
         //Select User
         $(e.target).toggleClass('selected');
         var playerListPreview = $('section.game-creator .player-list-preview');
         playerListPreview.html('');
-        window.selectedPlayers = window.selectedPlayers ||[];
+        window.selectedPlayers = [];
         $('section.user-selector div.player-selection > span').each((i, v) => {
             if($(v).hasClass('selected')){
                 window.selectedPlayers = [...window.selectedPlayers, $(v).find('span').text()];
                 playerListPreview.append("<li data-uuid='"+$(v).find('span').data('uuid')+"'>"+ $(v).find('span').text() +"</li>");
-            }else{
-                window.selectedPlayers.remove($(v).find('span').text());
             }
         });
-    });
+    };
+    $('section.user-selector div.player-selection > span').click(selectUser);
     //Section User Details
     $('section.user-details .save-btn').click((e)=>{
+        let existing = database.players.find((p)=>p.username==$('section.user-details input[name="username"]').val());
         window.database.players.push({
             username: $('section.user-details input[name="username"]').val(),
-            id: generateUUID(),
-            started: new Date(),
-            image: "",
-            gameIds:[]
+            id: existing != null && existing.id != $('section.user-details input[name="uuid"]').val()?generateUUID():$('section.user-details input[name="uuid"]').val(),
+            started: existing != null && existing.started != $('section.user-details input[name="date-created"]').val()?new Date():$('section.user-details input[name="date-created"]').val(),
+            image: $("section.user-details img.profilePicture").attr('src'),
+            gameIds: existing != null && existing.gameIds != $('section.user-details input[name="all-games"]').val()?existing.gameIds:$('section.user-details input[name="all-games"]').val()
         });
+        let newPlayer = $('section.user-selector .player-selection .template').clone().removeClass('template');
+        newPlayer.find('span').html($('section.user-details input[name="username"]').val() + '<i class="fa fa-pencil edit-user" style="margin-left: 0.666em;"></i>');
+        newPlayer.appendTo('section.user-selector .player-selection');
+        newPlayer.click(selectUser);
+        newPlayer.find('i').click(editUser);
+        $('section.user-details').addClass('visually-hidden');
+    });
+    $("section.user-details input[type='file']").change((e)=>{
+        let file = $("input[type=file]").get(0).files[0];
+        if(file){
+            var reader = new FileReader();
+            reader.onload = function(){
+                $("section.user-details img.profilePicture").attr("src", reader.result);
+            }
+            reader.readAsDataURL(file);
+        }
     });
     $('section.user-details .cancel-btn').click((e)=>{
         $('section.user-details').addClass('visually-hidden');

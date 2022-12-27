@@ -153,7 +153,8 @@ section.visually-hidden {
   font-weight: 600;
   margin-top: 0.5em;
   text-shadow: 0 1px 3px #000;
-  pointer-events: none;
+  position: relative;
+  user-select: none;
 }
 
 .game-creator form > div > fieldset > label {
@@ -202,5 +203,9 @@ fieldset > div {
 
 input[type="checkbox"]:not(:checked) {
   filter: invert(80%);
+}
+
+.template {
+  display: none!important;
 }
 
