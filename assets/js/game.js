@@ -116,7 +116,7 @@ $(function(){
                 <h2 class="accordion-header" role="tab"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#player-accordion .item-`+i+`" aria-expanded="false" aria-controls="player-accordion .item-`+i+`">`+playerName+`<span class="stat"><span class="remaining"></span><span class="average"></span></span><span class="stat">S.:<span class="set"></span></span><span class="stat">L.:<span class="leg"></span></span></button></h2>
                 <div class="accordion-collapse collapse item-`+i+`" role="tabpanel" data-bs-parent="#player-accordion">
                     <div class="accordion-body">
-                        <div class="input-group input-group-sm throw-input-group"><input class="border rounded-pill" type="number" min="0" max="180"><input class="border rounded-pill" type="number" min="0" max="180"><input class="border rounded-pill" type="number" min="0" max="180"><button class="btn btn-primary border rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#player-accordion .item-1" aria-expanded="false" aria-controls="player-accordion .item-`+i+`"><input type="number" placeholder="Sum">&nbsp; Done</button></div>
+                        <div class="input-group input-group-sm throw-input-group"><input class="border rounded-pill" type="number" min="0" max="180"><input class="border rounded-pill" type="number" min="0" max="180"><input class="border rounded-pill" type="number" min="0" max="180"><button class="btn btn-primary border rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#player-accordion .item-`+(i+1==window.selectedPlayers.length?0:i+1)+`" aria-expanded="false" aria-controls="player-accordion .item-`+i+`"><input type="number" placeholder="Sum">&nbsp; Done</button></div>
                     </div>
                 </div>
             </div>`);
@@ -134,7 +134,7 @@ $(function(){
         $("section.game .accordion-collapse .input-group > button").click(function(e){
             if(typeof window.currentTurn !== "undefined" && typeof window.currentTurn.throw1 !== "undefined" && typeof window.currentTurn.throw2 !== "undefined" && typeof window.currentTurn.throw3 !== "undefined" && typeof window.currentTurn.playerId !== "undefined"){
                 database.currentGame.turns.push(window.currentTurn);
-                $("section.game .accordion-collapse .input-group input").val("").attr('value','');
+                $("section.game .accordion-collapse .input-group input").val("").removeAttr('value');
                 $("section.game > .board > span").remove();
             }
         });
