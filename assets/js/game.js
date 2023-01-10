@@ -290,9 +290,26 @@ $(function(){
         }else{
             scored = fields[Math.floor(angle/18)];      // Normal
         }
-        //console.log(angle, distance,distance/(boardSize/2), fields[Math.floor(angle/18)]);
-        console.log(scored);
-        return {points:scored, angle:angle, distance:distance};
+        console.log(angle, distance,distance/(boardSize/2), fields[Math.floor(angle/18)]);
+        let turn = 0;
+        let player = database.players.find(p=>p.id === $('.accordion-collapse.show').parents('.player').data('id'));
+        if(player == null) return;
+        if(currentTurn == null || currentTurn.throw1 == null){
+            turn = 1;
+            currentTurn =  {
+                playerId: player.id,
+                throw1:{points:scored, angle:angle, distance: distance},
+                throw2:null,
+                throw3:null
+            };
+        }else if( currentTurn.throw2 == null){
+            turn = 2;
+            currentTurn["throw2"] = {points:scored, angle:angle, distance: distance};
+        }else if( currentTurn.throw2 == null){
+            turn=3;
+            currentTurn["throw3"] = {points:scored, angle:angle, distance: distance};
+        }
+        return {turn:turn, points:scored, angle:angle, distance:distance};
         
     }
     $("section.game > .board img").click(function(e){
@@ -306,23 +323,9 @@ $(function(){
         let boardSize = $("section.game > .board img").innerWidth();
         
         let scored = calculateScore(e.offsetX, e.offsetY);
-        let player = database.players.find(p=>p.id === $('.accordion-collapse.show').parents('.player').data('id'));
-        if(player == null) return;
-        if(currentTurn == null || currentTurn.throw1 == null){
-            currentTurn =  {
-                playerId: player.id,
-                throw1:{points:scored.points, angle:scored.angle, distance: scored.distance},
-                throw2:null,
-                throw3:null
-            };
-        }else if( currentTurn.throw2 == null){
-            currentTurn["throw2"] = {points:scored.points, angle:scored.angle, distance: scored.distance};
-        }else if( currentTurn.throw2 == null){
-            currentTurn["throw3"] = {points:scored.points, angle:scored.angle, distance: scored.distance};
-        }
         //Place Position Marker
         var halfCrosshairSize = Math.floor(boardSize / 50);
-        let crossHair = $('section.game > .board').append('<span class="ui-draggable ui-draggable-handle" style="top: '+ (-halfCrosshairSize+e.offsetY) +'px;left: '+ (-halfCrosshairSize + e.offsetX) +'px;"></span>');
+        let crossHair = $('section.game > .board').append('<span data-throw="'+scored.turn+'" class="ui-draggable ui-draggable-handle" style="top: '+ (-halfCrosshairSize+e.offsetY) +'px;left: '+ (-halfCrosshairSize + e.offsetX) +'px;"></span>');
         let crossHairClick = function(e){
             e.stopImmediatePropagation();
             //Check if already thrown
@@ -335,8 +338,7 @@ $(function(){
             if(Number.isNaN(boardY) || Number.isNaN(boardX)) return;
             
             let scored = calculateScore(boardX, boardY);
-            saveThrow(null);
-            let crossHairr = $('section.game > .board').append('<span class="ui-draggable ui-draggable-handle" style="top: '+ (-halfCrosshairSize+boardY) +'px;left: '+ (-halfCrosshairSize + boardX) +'px;"></span>');
+            let crossHairr = $('section.game > .board').append('<span data-throw="'+scored.turn+'" class="ui-draggable ui-draggable-handle" style="top: '+ (-halfCrosshairSize+boardY) +'px;left: '+ (-halfCrosshairSize + boardX) +'px;"></span>');
             crossHairr.on("click", crossHairClick);
             $('section.game > .board > span').draggable({
                 stop: function( e, ui) {
