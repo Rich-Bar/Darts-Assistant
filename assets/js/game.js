@@ -4,15 +4,13 @@ var rndGameId= generateUUID();
 window.database = {
     autoSave: false,
     currentGame: null,
-    games: {
-        [rndGameId]: {
+    games: [{
             id: rndGameId,
             mode: "501",
             started: new Date(),
             winners: [],
             turns: []
-        },
-    },
+        }],
     players: [{
             username: "Gustav",
             id: rndPlayerUserId,
@@ -20,13 +18,16 @@ window.database = {
             image: "",
             gameIds:[rndGameId]
         }],
-    modes: []
+    modes: [{
+        
+    }]
     
     
 }
 
 const fields = [6,10,15,2,17,3,19,7,16,8,11,14,9,12,5,20,1,18,4,13];
 $(function(){
+    //Extending JQuery
     $.fn.pressEnter = function(fn) {  
         return this.each(function() {  
             $(this).bind('enterPress', fn);
@@ -34,7 +35,39 @@ $(function(){
                 if(e.keyCode == 13){$(this).trigger("enterPress", e);}
             })
         });  
-     }; 
+     };
+    $.fn.draggable = function(){
+        var $this = this,
+        ns = 'draggable_'+(Math.random()+'').replace('.',''),
+        mm = 'mousemove.'+ns,
+        mu = 'mouseup.'+ns,
+        $w = $(window),
+        isFixed = ($this.css('position') === 'fixed'),
+        adjX = 0, adjY = 0;
+    
+        $this.mousedown(function(ev){
+            var pos = $this.offset();
+            if (isFixed) {
+                adjX = $w.scrollLeft(); adjY = $w.scrollTop();
+            }
+            var ox = (ev.pageX - pos.left), oy = (ev.pageY - pos.top);
+            $this.data(ns,{ x : ox, y: oy });
+            $w.on(mm, function(ev){
+                ev.preventDefault();
+                ev.stopPropagation();
+                if (isFixed) {
+                    adjX = $w.scrollLeft(); adjY = $w.scrollTop();
+                }
+                var offset = $this.data(ns);
+                $this.css({left: ev.pageX - adjX - offset.x, top: ev.pageY - adjY - offset.y});
+            });
+            $w.on(mu, function(){
+                $w.off(mm + ' ' + mu).removeData(ns);
+            });
+        });
+    
+        return this;
+    };
     //Load previous Games
     //window.database = JSON.parse(localStorage.get("dartAssistantDB"));
     
@@ -293,6 +326,11 @@ $(function(){
         //Place Position Marker
         let halfCrosshairSize = Math.floor(boardSize / 50);
         let crossHair = $('section.game > .board').append('<span style="top: '+ (-halfCrosshairSize+e.offsetY) +'px;left: '+ (-halfCrosshairSize + e.offsetX) +'px;"></span>');
+        let crossHairDrag = function(e){
+            e.preventDefault();
+            e.stopImmediatePropagation();
+
+        };
         let crossHairClick = function(e){
             e.preventDefault();
             e.stopImmediatePropagation();
