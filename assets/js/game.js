@@ -19,7 +19,14 @@ window.database = {
             gameIds:[rndGameId]
         }],
     modes: [{
+<<<<<<< HEAD
 
+=======
+            id: "501",
+            startPoints: 501,
+            bullForStart: false,
+            lateThrow: true
+>>>>>>> 97da4dd09554f328e96b0cdc320b65125c01168b
     }]
     
     
@@ -118,7 +125,7 @@ $(function(){
         $('section.game').removeClass('visually-hidden');
         window.database.currentGame = {
             id: generateUUID(),
-            mode: database.modes[$('.game-creator .available-modes').val()],
+            mode: database.modes.find((m)=>m.id==$('.game-creator .available-modes').val()),
             started: new Date(),
             winners: [],
             turns: []
