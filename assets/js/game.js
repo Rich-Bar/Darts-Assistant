@@ -132,8 +132,11 @@ $(function(){
             else $(e.target).parent().find(">button > input").focus();
         });
         $("section.game .accordion-collapse .input-group > button").click(function(e){
-            if(typeof window.currentTurn !== "undefined" && typeof window.currentTurn.throw1 !== "undefined" && typeof window.currentTurn.throw2 !== "undefined" && typeof window.currentTurn.throw3 !== "undefined" && typeof window.currentTurn.playerId !== "undefined")
+            if(typeof window.currentTurn !== "undefined" && typeof window.currentTurn.throw1 !== "undefined" && typeof window.currentTurn.throw2 !== "undefined" && typeof window.currentTurn.throw3 !== "undefined" && typeof window.currentTurn.playerId !== "undefined"){
                 database.currentGame.turns.push(window.currentTurn);
+                $("section.game .accordion-collapse .input-group input").val("").attr('value','');
+                $("section.game > .board > span").remove();
+            }
         });
         $("section.game .accordion-collapse .input-group > button > input").pressEnter((e)=>{
             $(e.target).parent().click();
