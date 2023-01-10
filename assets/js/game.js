@@ -19,7 +19,7 @@ window.database = {
             gameIds:[rndGameId]
         }],
     modes: [{
-        
+
     }]
     
     
@@ -36,38 +36,6 @@ $(function(){
             })
         });  
      };
-    $.fn.draggable = function(){
-        var $this = this,
-        ns = 'draggable_'+(Math.random()+'').replace('.',''),
-        mm = 'mousemove.'+ns,
-        mu = 'mouseup.'+ns,
-        $w = $(window),
-        isFixed = ($this.css('position') === 'fixed'),
-        adjX = 0, adjY = 0;
-    
-        $this.mousedown(function(ev){
-            var pos = $this.offset();
-            if (isFixed) {
-                adjX = $w.scrollLeft(); adjY = $w.scrollTop();
-            }
-            var ox = (ev.pageX - pos.left), oy = (ev.pageY - pos.top);
-            $this.data(ns,{ x : ox, y: oy });
-            $w.on(mm, function(ev){
-                ev.preventDefault();
-                ev.stopPropagation();
-                if (isFixed) {
-                    adjX = $w.scrollLeft(); adjY = $w.scrollTop();
-                }
-                var offset = $this.data(ns);
-                $this.css({left: ev.pageX - adjX - offset.x, top: ev.pageY - adjY - offset.y});
-            });
-            $w.on(mu, function(){
-                $w.off(mm + ' ' + mu).removeData(ns);
-            });
-        });
-    
-        return this;
-    };
     //Load previous Games
     //window.database = JSON.parse(localStorage.get("dartAssistantDB"));
     
@@ -325,14 +293,8 @@ $(function(){
         saveThrow(null);
         //Place Position Marker
         let halfCrosshairSize = Math.floor(boardSize / 50);
-        let crossHair = $('section.game > .board').append('<span style="top: '+ (-halfCrosshairSize+e.offsetY) +'px;left: '+ (-halfCrosshairSize + e.offsetX) +'px;"></span>');
-        let crossHairDrag = function(e){
-            e.preventDefault();
-            e.stopImmediatePropagation();
-
-        };
+        let crossHair = $('section.game > .board').append('<span class="ui-draggable ui-draggable-handle" style="top: '+ (-halfCrosshairSize+e.offsetY) +'px;left: '+ (-halfCrosshairSize + e.offsetX) +'px;"></span>');
         let crossHairClick = function(e){
-            e.preventDefault();
             e.stopImmediatePropagation();
             //Check if already thrown
             if($("section.game > .board > span").length == 3){
@@ -345,11 +307,16 @@ $(function(){
             let boardY = e.offsetY + parseInt($(e.target).css('top').replace('px',''));
             console.log(boardX, boardY, halfCrosshairSize);
             if(Number.isNaN(boardY) || Number.isNaN(boardX) || Number.isNaN(halfCrosshairSize)) return;
+        
             let scored = calculateScore(boardX, boardY);
             saveThrow(null);
-            let crossHairr = $('section.game > .board').append('<span style="top: '+ (-halfCrosshairSize+boardY) +'px;left: '+ (-halfCrosshairSize + boardX) +'px;"></span>');
+            let crossHairr = $('section.game > .board').append('<span class="ui-draggable ui-draggable-handle" style="top: '+ (-halfCrosshairSize+boardY) +'px;left: '+ (-halfCrosshairSize + boardX) +'px;"></span>');
             crossHairr.on("click", crossHairClick);
-
+            $('section.game > .board > span').draggable({
+                stop: function( e, ui) {
+                    console.log(e,ui);
+                }
+            });
             //Set Score in Input
             $("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").first().val(scored).attr('value', scored).trigger("change");
             if($("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").length){
@@ -358,10 +325,12 @@ $(function(){
                 $("section.game .accordion-collapse.show .input-group > button > input").focus();
             }
         };
-
         crossHair.click(crossHairClick);
-        //Set Score preview
-
+        $('section.game > .board > span').draggable({
+            stop: function( e, ui) {
+                console.log(e,ui);
+            }
+        });
         //Set Score in Input
         $("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").first().val(scored).attr('value', scored).trigger("change");
         if($("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").length){
