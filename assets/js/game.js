@@ -321,6 +321,7 @@ $(function(){
         let boardSize = $("section.game > .board img").innerWidth();
         
         let scored = calculateScore(e.offsetX, e.offsetY);
+        console.log(scored);
         //Place Position Marker
         var halfCrosshairSize = Math.floor(boardSize / 50);
         let crossHair = $('section.game > .board').append('<span data-throw="'+scored.turn+'" class="ui-draggable ui-draggable-handle" style="top: '+ (-halfCrosshairSize+e.offsetY) +'px;left: '+ (-halfCrosshairSize + e.offsetX) +'px;"></span>');
@@ -336,11 +337,32 @@ $(function(){
             if(Number.isNaN(boardY) || Number.isNaN(boardX)) return;
             
             let scored = calculateScore(boardX, boardY);
+            console.log(scored);
             let crossHairr = $('section.game > .board').append('<span data-throw="'+scored.turn+'" class="ui-draggable ui-draggable-handle" style="top: '+ (-halfCrosshairSize+boardY) +'px;left: '+ (-halfCrosshairSize + boardX) +'px;"></span>');
             crossHairr.on("click", crossHairClick);
             $('section.game > .board > span').draggable({
                 stop: function( e, ui) {
-                    console.log(e,ui);
+                    if(currentTurn == null || currentTurn.throw1 == null){
+                        currentTurn =  {
+                            playerId: player.id,
+                            throw1:null,
+                            throw2:null,
+                            throw3:null
+                        };
+                    }else if( currentTurn.throw2 == null){
+                        currentTurn["throw2"] = null;
+                    }else if( currentTurn.throw3 == null){
+                        currentTurn["throw3"] = null;
+                    }
+                    let scored = calculateScore(ui.position.left + halfCrosshairSize, ui.position.top + halfCrosshairSize);
+                    console.log(scored);
+                    //Set Score in Input
+                    $("section.game .accordion-collapse.show .input-group > input[type='number'][value]:nth-child("+($(e.target).data('throw')-1)+")").val(scored.points).attr('value', scored.points).trigger("change");
+                    if($("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").length){
+                        $("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").first().focus();
+                    }else{
+                        $("section.game .accordion-collapse.show .input-group > button > input").focus();
+                    }
                 }
             });
             //Set Score in Input
@@ -354,7 +376,27 @@ $(function(){
         crossHair.click(crossHairClick);
         $('section.game > .board > span').draggable({
             stop: function( e, ui) {
-                console.log(calculateScore(ui.position.top, ui.position.left));
+                if(currentTurn == null || currentTurn.throw1 == null){
+                    currentTurn =  {
+                        playerId: player.id,
+                        throw1:null,
+                        throw2:null,
+                        throw3:null
+                    };
+                }else if( currentTurn.throw2 == null){
+                    currentTurn["throw2"] = null;
+                }else if( currentTurn.throw3 == null){
+                    currentTurn["throw3"] = null;
+                }
+                let scored = calculateScore(ui.position.left + halfCrosshairSize, ui.position.top + halfCrosshairSize);
+                console.log(scored);
+                //Set Score in Input
+                $("section.game .accordion-collapse.show .input-group > input[type='number'][value]:nth-child("+($(e.target).data('throw')-1)+")").val(scored.points).attr('value', scored.points).trigger("change");
+                if($("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").length){
+                    $("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").first().focus();
+                }else{
+                    $("section.game .accordion-collapse.show .input-group > button > input").focus();
+                }
             }
         });
         //Set Score in Input
