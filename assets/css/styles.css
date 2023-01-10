@@ -183,7 +183,7 @@ section.home > div > * {
 }
 
 section:not(.visually-hidden) ~ section.home {
-  display: none;
+  /*display: none;*/
 }
 
 .game-creator > div {
