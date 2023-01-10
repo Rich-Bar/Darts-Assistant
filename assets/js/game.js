@@ -19,10 +19,7 @@ window.database = {
             gameIds:[rndGameId]
         }],
     modes: [{
-            id: "501",
-            startPoints: 501,
-            bullForStart: false,
-            lateThrow: true
+
     }]
     
     
@@ -121,7 +118,7 @@ $(function(){
         $('section.game').removeClass('visually-hidden');
         window.database.currentGame = {
             id: generateUUID(),
-            mode: database.modes.find((m)=>m.id==$('.game-creator .available-modes').val()),
+            mode: database.modes[$('.game-creator .available-modes').val()],
             started: new Date(),
             winners: [],
             turns: []
@@ -170,8 +167,8 @@ $(function(){
         let existing = database.players.find((p)=>p.username==$('section.user-details input[name="username"]').val());
         window.database.players.push({
             username: $('section.user-details input[name="username"]').val(),
-            id: existing != null && existing.id != $('section.user-details input[name="uuid"]').val()?generateUUID():$('section.user-details input[name="uuid"]').val(),
-            started: existing != null && existing.started != $('section.user-details input[name="date-created"]').val()?new Date():$('section.user-details input[name="date-created"]').val(),
+            id: existing != null && typeof existing.id !== "undefined" && existing.id != $('section.user-details input[name="uuid"]').val()?$('section.user-details input[name="uuid"]').val():generateUUID(),
+            started: existing != null && existing.started != $('section.user-details input[name="date-created"]').val()?$('section.user-details input[name="date-created"]').val():new Date(),
             image: $("section.user-details img.profilePicture").attr('src'),
             gameIds: existing != null && existing.gameIds != $('section.user-details input[name="all-games"]').val()?existing.gameIds:$('section.user-details input[name="all-games"]').val()
         });
@@ -295,7 +292,7 @@ $(function(){
         let scored = calculateScore(e.offsetX, e.offsetY);
         saveThrow(null);
         //Place Position Marker
-        let halfCrosshairSize = Math.floor(boardSize / 50);
+        var halfCrosshairSize = Math.floor(boardSize / 50);
         let crossHair = $('section.game > .board').append('<span class="ui-draggable ui-draggable-handle" style="top: '+ (-halfCrosshairSize+e.offsetY) +'px;left: '+ (-halfCrosshairSize + e.offsetX) +'px;"></span>');
         let crossHairClick = function(e){
             e.stopImmediatePropagation();
@@ -304,13 +301,10 @@ $(function(){
                 $("section.game > .board > span").remove();
                 return;
             }
-            let boardSize = $("section.game > .board img").innerWidth();
-            let halfCrosshairSize = Math.floor(boardSize / 50);
             let boardX = e.offsetX + parseInt($(e.target).css('left').replace('px',''));
             let boardY = e.offsetY + parseInt($(e.target).css('top').replace('px',''));
-            console.log(boardX, boardY, halfCrosshairSize);
-            if(Number.isNaN(boardY) || Number.isNaN(boardX) || Number.isNaN(halfCrosshairSize)) return;
-        
+            if(Number.isNaN(boardY) || Number.isNaN(boardX)) return;
+            
             let scored = calculateScore(boardX, boardY);
             saveThrow(null);
             let crossHairr = $('section.game > .board').append('<span class="ui-draggable ui-draggable-handle" style="top: '+ (-halfCrosshairSize+boardY) +'px;left: '+ (-halfCrosshairSize + boardX) +'px;"></span>');
@@ -331,7 +325,7 @@ $(function(){
         crossHair.click(crossHairClick);
         $('section.game > .board > span').draggable({
             stop: function( e, ui) {
-                console.log(e,ui);
+                console.log(calculateScore(ui.position.top, ui.position.left));
             }
         });
         //Set Score in Input
