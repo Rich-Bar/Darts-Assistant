@@ -1,6 +1,11 @@
 var rndPlayerUserId = generateUUID();
 var rndGameId= generateUUID();
-
+var currentTurn = {
+    playerId: rndPlayerUserId,
+    throw1:{points:30, angle: 10, distance: 0.4},
+    throw2:{points:30, angle: 102, distance: 0.4},
+    throw3:null
+};
 window.database = {
     autoSave: false,
     currentGame: null,
@@ -9,7 +14,12 @@ window.database = {
             mode: "501",
             started: new Date(),
             winners: [],
-            turns: []
+            turns: [{
+                playerId: rndPlayerUserId,
+                throw1:{points:30, angle: 10, distance: 0.4},
+                throw2:{points:30, angle: 102, distance: 0.4},
+                throw3:{points:30, angle: 1, distance: 0.4}
+            }]
         }],
     players: [{
             username: "Gustav",
@@ -26,7 +36,7 @@ window.database = {
     }]
     
     
-}
+};
 
 const fields = [6,10,15,2,17,3,19,7,16,8,11,14,9,12,5,20,1,18,4,13];
 $(function(){
@@ -118,6 +128,22 @@ $(function(){
             i++;
         }
         $('section.game .throw-input-group input[max="180"]').change(calculateThrow);
+        
+        //Continue on Enter in Button-Input
+        $("section.game .accordion-collapse .input-group > input").pressEnter((e)=>{
+            $(e.target).attr('value', $(e.target).val());
+            let inputsLeft = $(e.target).parent().find('input[type=number]:not([value])');
+            if(inputsLeft.length)inputsLeft.first().focus();
+            else $(e.target).parent().find(">button > input").focus();
+        });
+        $("section.game .accordion-collapse .input-group > button").click(function(e){
+            if(typeof window.currentTurn !== "undefined" && typeof window.currentTurn.throw1 !== "undefined" && typeof window.currentTurn.throw2 !== "undefined" && typeof window.currentTurn.throw3 !== "undefined" && typeof window.currentTurn.playerId !== "undefined")
+                database.currentGame.turns.push(window.currentTurn);
+        });
+        $("section.game .accordion-collapse .input-group > button > input").pressEnter((e)=>{
+            $(e.target).parent().click();
+        });
+
         $('section.game').removeClass('visually-hidden');
         window.database.currentGame = {
             id: generateUUID(),
@@ -231,16 +257,6 @@ $(function(){
         $("section.user-details > h1 > span").text("Create new");
         $("section.user-details").removeClass('visually-hidden');
     });
-    //Continue on Enter in Button-Input
-    $("section.game .accordion-collapse .input-group > input").pressEnter((e)=>{
-        $(e.target).attr('value', $(e.target).val());
-        let inputsLeft = $(e.target).parent().find('input[type=number]:not([value])');
-        if(inputsLeft.length)inputsLeft.first().focus();
-        else $(e.target).parent().find(">button >input").focus();
-    });
-    $("section.game .accordion-collapse .input-group > button > input").pressEnter((e)=>{
-        $(e.target).parent().click();
-    });
     //Calculate Throw 
     window.calculateThrow = function(e){
         let totalPoints = 0;
@@ -276,11 +292,8 @@ $(function(){
         }
         //console.log(angle, distance,distance/(boardSize/2), fields[Math.floor(angle/18)]);
         console.log(scored);
-        return scored;
+        return {points:scored, angle:angle, distance:distance};
         
-    }
-    let saveThrow = function(e){
-        //window.database.currentGame.
     }
     $("section.game > .board img").click(function(e){
         e.preventDefault();
@@ -293,7 +306,20 @@ $(function(){
         let boardSize = $("section.game > .board img").innerWidth();
         
         let scored = calculateScore(e.offsetX, e.offsetY);
-        saveThrow(null);
+        let player = database.players.find(p=>p.id === $('.accordion-collapse.show').parents('.player').data('id'));
+        if(player == null) return;
+        if(currentTurn == null || currentTurn.throw1 == null){
+            currentTurn =  {
+                playerId: player.id,
+                throw1:{points:scored.points, angle:scored.angle, distance: scored.distance},
+                throw2:null,
+                throw3:null
+            };
+        }else if( currentTurn.throw2 == null){
+            currentTurn["throw2"] = {points:scored.points, angle:scored.angle, distance: scored.distance};
+        }else if( currentTurn.throw2 == null){
+            currentTurn["throw3"] = {points:scored.points, angle:scored.angle, distance: scored.distance};
+        }
         //Place Position Marker
         var halfCrosshairSize = Math.floor(boardSize / 50);
         let crossHair = $('section.game > .board').append('<span class="ui-draggable ui-draggable-handle" style="top: '+ (-halfCrosshairSize+e.offsetY) +'px;left: '+ (-halfCrosshairSize + e.offsetX) +'px;"></span>');
