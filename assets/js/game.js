@@ -111,7 +111,6 @@ $(function(){
         let i = 0;
         for(playerName of window.selectedPlayers){
             let player = database.players.find((p)=>p.username==playerName);
-            console.log(player);
             $('section.game .player-overview').append('<div class="accordion-item player" data-id='+player.id+'>'+`
                 <h2 class="accordion-header" role="tab"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#player-accordion .item-`+i+`" aria-expanded="false" aria-controls="player-accordion .item-`+i+`">`+playerName+`<span class="stat"><span class="remaining"></span><span class="average"></span></span><span class="stat">S.:<span class="set"></span></span><span class="stat">L.:<span class="leg"></span></span></button></h2>
                 <div class="accordion-collapse collapse item-`+i+`" role="tabpanel" data-bs-parent="#player-accordion">
@@ -357,7 +356,7 @@ $(function(){
                     let scored = calculateScore(ui.position.left + halfCrosshairSize, ui.position.top + halfCrosshairSize);
                     console.log(scored);
                     //Set Score in Input
-                    $("section.game .accordion-collapse.show .input-group > input[type='number'][value]:nth-child("+($(e.target).data('throw')-1)+")").val(scored.points).attr('value', scored.points).trigger("change");
+                    $("section.game .accordion-collapse.show .input-group > input[type='number'][value]:nth-child("+($(e.target).attr('data-throw'))+")").val(scored.points).attr('value', scored.points).trigger("change");
                     if($("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").length){
                         $("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").first().focus();
                     }else{
@@ -391,7 +390,7 @@ $(function(){
                 let scored = calculateScore(ui.position.left + halfCrosshairSize, ui.position.top + halfCrosshairSize);
                 console.log(scored);
                 //Set Score in Input
-                $("section.game .accordion-collapse.show .input-group > input[type='number'][value]:nth-child("+($(e.target).data('throw')-1)+")").val(scored.points).attr('value', scored.points).trigger("change");
+                $("section.game .accordion-collapse.show .input-group > input[type='number'][value]:nth-child("+($(e.target).attr('data-throw'))+")").val(scored.points).attr('value', scored.points).trigger("change");
                 if($("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").length){
                     $("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").first().focus();
                 }else{
