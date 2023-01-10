@@ -1,11 +1,6 @@
 var rndPlayerUserId = generateUUID();
 var rndGameId= generateUUID();
-var currentTurn = {
-    playerId: rndPlayerUserId,
-    throw1:{points:30, angle: 10, distance: 0.4},
-    throw2:{points:30, angle: 102, distance: 0.4},
-    throw3:null
-};
+var currentTurn = null;
 window.database = {
     autoSave: false,
     currentGame: null,
@@ -290,7 +285,7 @@ $(function(){
         }else{
             scored = fields[Math.floor(angle/18)];      // Normal
         }
-        console.log(angle, distance,distance/(boardSize/2), fields[Math.floor(angle/18)]);
+        //console.log(angle, distance,distance/(boardSize/2), fields[Math.floor(angle/18)]);
         let turn = 0;
         let player = database.players.find(p=>p.id === $('.accordion-collapse.show').parents('.player').data('id'));
         if(player == null) return;
@@ -305,7 +300,7 @@ $(function(){
         }else if( currentTurn.throw2 == null){
             turn = 2;
             currentTurn["throw2"] = {points:scored, angle:angle, distance: distance};
-        }else if( currentTurn.throw2 == null){
+        }else if( currentTurn.throw3 == null){
             turn=3;
             currentTurn["throw3"] = {points:scored, angle:angle, distance: distance};
         }
@@ -346,7 +341,7 @@ $(function(){
                 }
             });
             //Set Score in Input
-            $("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").first().val(scored).attr('value', scored).trigger("change");
+            $("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").first().val(scored.points).attr('value', scored.points).trigger("change");
             if($("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").length){
                 $("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").first().focus();
             }else{
@@ -360,7 +355,7 @@ $(function(){
             }
         });
         //Set Score in Input
-        $("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").first().val(scored).attr('value', scored).trigger("change");
+        $("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").first().val(scored.points).attr('value', scored.points).trigger("change");
         if($("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").length){
             $("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").first().focus();
         }else{
