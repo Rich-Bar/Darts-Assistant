@@ -19,14 +19,10 @@ window.database = {
             gameIds:[rndGameId]
         }],
     modes: [{
-<<<<<<< HEAD
-
-=======
             id: "501",
             startPoints: 501,
             bullForStart: false,
             lateThrow: true
->>>>>>> 97da4dd09554f328e96b0cdc320b65125c01168b
     }]
     
     
