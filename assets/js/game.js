@@ -24,13 +24,17 @@ window.database = {
             gameIds:[rndGameId]
         }],
     modes: [{
-            id: "501",
+            name: "501",
             startPoints: 501,
             bullForStart: false,
-            lateThrow: true
+            lastChance: true,
+            doubleOut: true,
+            start: 501,
+            bestOfLegs: 3,
+            legCount: 0,
+            bestOfSets: 3,
+            setCount: 0
     }]
-    
-    
 };
 
 const fields = [6,10,15,2,17,3,19,7,16,8,11,14,9,12,5,20,1,18,4,13];
@@ -144,11 +148,21 @@ $(function(){
         $('section.game').removeClass('visually-hidden');
         window.database.currentGame = {
             id: generateUUID(),
-            mode: database.modes.find((m)=>m.id==$('.game-creator .available-modes').val()),
+            mode: database.modes.find((m)=>m.name==$('.game-creator .available-modes').val()),
             started: new Date(),
             winners: [],
             turns: []
         };
+        $('.accordion-body input').change(function(){
+            let curr = (isNaN($(".collapse.show .sum-turn").val())) ? 0 : $(".collapse.show .sum-turn").val();
+            let sumT = 0;
+            database.currentGame.turns.filter(turn=> {
+                if(turn.playerId!=$(".collapse.show").parents(".player").data("id"))return;
+                sumT = sumT + turn.throw1.points + turn.throw2.points + turn.throw3.points;
+                return 0;
+            });
+            $(".remaining").text(database.currentGame.mode.start - curr - sumT);
+        });
     });
     $("section.game-creator i.close-section").click(()=>{
         //Close New Game
