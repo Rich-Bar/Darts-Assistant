@@ -2,6 +2,7 @@ var rndPlayerUserId = generateUUID();
 var rndGameId= generateUUID();
 
 window.database = {
+    autoSave: false,
     currentGame: null,
     games: {
         [rndGameId]: {
@@ -14,7 +15,7 @@ window.database = {
     },
     players: [{
             username: "Gustav",
-            id: rndGameId,
+            id: rndPlayerUserId,
             started: new Date(),
             image: "",
             gameIds:[rndGameId]
@@ -99,8 +100,9 @@ $(function(){
         $('section:not(.home)').addClass('visually-hidden');
         $('section.game .player-overview').html('');
         let i = 0;
-        for(playerName in selectedPlayers){
+        for(playerName of window.selectedPlayers){
             let player = database.players.find((p)=>p.username==playerName);
+            console.log(player);
             $('section.game .player-overview').append('<div class="accordion-item player" data-id='+player.id+'>'+`
                 <h2 class="accordion-header" role="tab"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#player-accordion .item-`+i+`" aria-expanded="false" aria-controls="player-accordion .item-`+i+`">`+playerName+`<span class="stat"><span class="remaining"></span><span class="average"></span></span><span class="stat">S.:<span class="set"></span></span><span class="stat">L.:<span class="leg"></span></span></button></h2>
                 <div class="accordion-collapse collapse item-`+i+`" role="tabpanel" data-bs-parent="#player-accordion">
@@ -111,6 +113,7 @@ $(function(){
             </div>`);
             i++;
         }
+        $('section.game .throw-input-group input[max="180"]').change(calculateThrow);
         $('section.game').removeClass('visually-hidden');
         window.database.currentGame = {
             id: generateUUID(),
@@ -119,7 +122,6 @@ $(function(){
             winners: [],
             turns: []
         };
-        e.preventDefault();
     });
     $("section.game-creator i.close-section").click(()=>{
         //Close New Game
@@ -236,28 +238,24 @@ $(function(){
         $(e.target).parent().click();
     });
     //Calculate Throw 
-    //via inputs
-    $("section.game .accordion-collapse .input-group > input").on('change', (e)=>{
+    window.calculateThrow = function(e){
         let totalPoints = 0;
         $(e.target).parent().find("> input").each(function(){
                 totalPoints = parseInt($(this).val()||"0") + totalPoints;
         });
         $(e.target).parent().find("> button > input").val(totalPoints).attr('value', totalPoints).trigger("change")
-    });
+    }
+    //via inputs
+    $("section.game .accordion-collapse .input-group > input").on('change', calculateThrow);
     //via board
-    $("section.game > .board img").click(function(e){
-        //Check if already thrown
-        if($("section.game > .board > span").length == 3){
-            $("section.game > .board > span").remove();
-            return;
-        }
+    let calculateScore = function(x, y){
         let boardSize = $("section.game > .board img").innerWidth();
         let center = {
             x: $('section.game > .board img').innerWidth()/2 ,
             y:$('section.game > .board img').innerHeight()/2
         };
-        let angle = (Math.atan2(center.y - e.offsetY, center.x - e.offsetX)* 180 / Math.PI + 189)%360;
-        let distance = Math.sqrt(Math.pow(center.y - e.offsetY, 2) + Math.pow(center.x - e.offsetX, 2));
+        let angle = (Math.atan2(center.y - y, center.x - x)* 180 / Math.PI + 189)%360;
+        let distance = Math.sqrt(Math.pow(center.y - y, 2) + Math.pow(center.x - x, 2));
         
         let scored = 0;
         if(distance/(boardSize/2) < 0.032){
@@ -274,15 +272,59 @@ $(function(){
         }
         //console.log(angle, distance,distance/(boardSize/2), fields[Math.floor(angle/18)]);
         console.log(scored);
-        let throwNr = $('section.game > .board > span').length;
+        return scored;
+        
+    }
+    let saveThrow = function(e){
         //window.database.currentGame.
+    }
+    $("section.game > .board img").click(function(e){
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        //Check if already thrown
+        if($("section.game > .board > span").length == 3){
+            $("section.game > .board > span").remove();
+            return;
+        }
+        let boardSize = $("section.game > .board img").innerWidth();
+        
+        let scored = calculateScore(e.offsetX, e.offsetY);
+        saveThrow(null);
         //Place Position Marker
         let halfCrosshairSize = Math.floor(boardSize / 50);
-        $('section.game > .board').append('<span style="top: '+ (-halfCrosshairSize+e.offsetY) +'px;left: '+ (-halfCrosshairSize + e.offsetX) +'px;"></span>');
+        let crossHair = $('section.game > .board').append('<span style="top: '+ (-halfCrosshairSize+e.offsetY) +'px;left: '+ (-halfCrosshairSize + e.offsetX) +'px;"></span>');
+        let crossHairClick = function(e){
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            //Check if already thrown
+            if($("section.game > .board > span").length == 3){
+                $("section.game > .board > span").remove();
+                return;
+            }
+            let boardSize = $("section.game > .board img").innerWidth();
+            let halfCrosshairSize = Math.floor(boardSize / 50);
+            let boardX = e.offsetX + parseInt($(e.target).css('left').replace('px',''));
+            let boardY = e.offsetY + parseInt($(e.target).css('top').replace('px',''));
+            console.log(boardX, boardY, halfCrosshairSize);
+            if(Number.isNaN(boardY) || Number.isNaN(boardX) || Number.isNaN(halfCrosshairSize)) return;
+            let scored = calculateScore(boardX, boardY);
+            saveThrow(null);
+            let crossHairr = $('section.game > .board').append('<span style="top: '+ (-halfCrosshairSize+boardY) +'px;left: '+ (-halfCrosshairSize + boardX) +'px;"></span>');
+            crossHairr.on("click", crossHairClick);
+
+            //Set Score in Input
+            $("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").first().val(scored).attr('value', scored).trigger("change");
+            if($("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").length){
+                $("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").first().focus();
+            }else{
+                $("section.game .accordion-collapse.show .input-group > button > input").focus();
+            }
+        };
+
+        crossHair.click(crossHairClick);
         //Set Score preview
 
         //Set Score in Input
-        var totalPoints = 0;
         $("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").first().val(scored).attr('value', scored).trigger("change");
         if($("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").length){
             $("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").first().focus();
