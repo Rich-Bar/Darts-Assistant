@@ -112,14 +112,21 @@ $(function(){
         //Start Game
         $('section:not(.home)').addClass('visually-hidden');
         $('section.game .player-overview').html('');
+        window.database.currentGame = {
+            id: generateUUID(),
+            mode: database.modes.find((m)=>m.name==$('.game-creator .available-modes').val()),
+            started: new Date(),
+            winners: [],
+            turns: []
+        };
         let i = 0;
         for(playerName of window.selectedPlayers){
             let player = database.players.find((p)=>p.username==playerName);
             $('section.game .player-overview').append('<div class="accordion-item player" data-id='+player.id+'>'+`
-                <h2 class="accordion-header" role="tab"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#player-accordion .item-`+i+`" aria-expanded="false" aria-controls="player-accordion .item-`+i+`">`+playerName+`<span class="stat"><span class="remaining"></span><span class="average"></span></span><span class="stat">S.:<span class="set"></span></span><span class="stat">L.:<span class="leg"></span></span></button></h2>
+                <h2 class="accordion-header" role="tab"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#player-accordion .item-`+i+`" aria-expanded="false" aria-controls="player-accordion .item-`+i+`">`+playerName+`<span class="stat"><span class="remaining">`+database.currentGame.mode.startPoints+`</span><span class="average"></span></span><span class="stat">S.:<span class="set">0</span></span><span class="stat">L.:<span class="leg">0</span></span></button></h2>
                 <div class="accordion-collapse collapse item-`+i+`" role="tabpanel" data-bs-parent="#player-accordion">
                     <div class="accordion-body">
-                        <div class="input-group input-group-sm throw-input-group"><input class="border rounded-pill" type="number" min="0" max="180"><input class="border rounded-pill" type="number" min="0" max="180"><input class="border rounded-pill" type="number" min="0" max="180"><button class="btn btn-primary border rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#player-accordion .item-`+(i+1==window.selectedPlayers.length?0:i+1)+`" aria-expanded="false" aria-controls="player-accordion .item-`+i+`"><input type="number" placeholder="Sum">&nbsp; Done</button></div>
+                        <div class="input-group input-group-sm throw-input-group"><input class="border rounded-pill" type="number" min="0" max="180"><input class="border rounded-pill" type="number" min="0" max="180"><input class="border rounded-pill" type="number" min="0" max="180"><button class="btn btn-primary border rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#player-accordion .item-`+(i+1==window.selectedPlayers.length&&i!=0?0:i+1)+`" aria-expanded="false" aria-controls="player-accordion .item-`+i+`"><input type="number" placeholder="Sum">&nbsp; Done</button></div>
                     </div>
                 </div>
             </div>`);
@@ -144,24 +151,17 @@ $(function(){
         $("section.game .accordion-collapse .input-group > button > input").pressEnter((e)=>{
             $(e.target).parent().click();
         });
-
         $('section.game').removeClass('visually-hidden');
-        window.database.currentGame = {
-            id: generateUUID(),
-            mode: database.modes.find((m)=>m.name==$('.game-creator .available-modes').val()),
-            started: new Date(),
-            winners: [],
-            turns: []
-        };
-        $('.accordion-body input').change(function(){
-            let curr = (isNaN($(".collapse.show .sum-turn").val())) ? 0 : $(".collapse.show .sum-turn").val();
+        $("section.game .accordion-collapse .input-group > button > input").change(function(e){
+            let tar = $(e.target);
+            let curr = isNaN(parseInt(tar.val())) ? 0 : parseInt(tar.val());
             let sumT = 0;
             database.currentGame.turns.filter(turn=> {
-                if(turn.playerId!=$(".collapse.show").parents(".player").data("id"))return;
-                sumT = sumT + turn.throw1.points + turn.throw2.points + turn.throw3.points;
+                if(turn.playerId!= tar.parents(".player").data("id"))return;
+                sumT += (turn.throw1 == null?0:turn.throw1.points||0) +(turn.throw2 == null?0:turn.throw2.points||0) + (turn.throw3 == null?0:turn.throw3.points||0);
                 return 0;
             });
-            $(".remaining").text(database.currentGame.mode.start - curr - sumT);
+            tar.parents(".player").find(".remaining").text(""+(database.currentGame.mode.startPoints - curr - sumT));
         });
     });
     $("section.game-creator i.close-section").click(()=>{
@@ -334,7 +334,7 @@ $(function(){
         let boardSize = $("section.game > .board img").innerWidth();
         
         let scored = calculateScore(e.offsetX, e.offsetY);
-        console.log(scored);
+        if(scored == null) return;
         //Place Position Marker
         var halfCrosshairSize = Math.floor(boardSize / 50);
         let crossHair = $('section.game > .board').append('<span data-throw="'+scored.turn+'" class="ui-draggable ui-draggable-handle" style="top: '+ (-halfCrosshairSize+e.offsetY) +'px;left: '+ (-halfCrosshairSize + e.offsetX) +'px;"></span>');
@@ -350,6 +350,7 @@ $(function(){
             if(Number.isNaN(boardY) || Number.isNaN(boardX)) return;
             
             let scored = calculateScore(boardX, boardY);
+            if(scored == null) return;
             console.log(scored);
             let crossHairr = $('section.game > .board').append('<span data-throw="'+scored.turn+'" class="ui-draggable ui-draggable-handle" style="top: '+ (-halfCrosshairSize+boardY) +'px;left: '+ (-halfCrosshairSize + boardX) +'px;"></span>');
             crossHairr.on("click", crossHairClick);
@@ -368,7 +369,7 @@ $(function(){
                         currentTurn["throw3"] = null;
                     }
                     let scored = calculateScore(ui.position.left + halfCrosshairSize, ui.position.top + halfCrosshairSize);
-                    console.log(scored);
+                    if(scored == null) return;
                     //Set Score in Input
                     $("section.game .accordion-collapse.show .input-group > input[type='number'][value]:nth-child("+($(e.target).attr('data-throw'))+")").val(scored.points).attr('value', scored.points).trigger("change");
                     if($("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").length){
@@ -402,7 +403,7 @@ $(function(){
                     currentTurn["throw3"] = null;
                 }
                 let scored = calculateScore(ui.position.left + halfCrosshairSize, ui.position.top + halfCrosshairSize);
-                console.log(scored);
+                if(scored == null) return;
                 //Set Score in Input
                 $("section.game .accordion-collapse.show .input-group > input[type='number'][value]:nth-child("+($(e.target).attr('data-throw'))+")").val(scored.points).attr('value', scored.points).trigger("change");
                 if($("section.game .accordion-collapse.show .input-group > input[type='number']:not([value])").length){
@@ -458,4 +459,4 @@ class JavascriptDataDownloader {
         a.click();
         body.removeChild(a);
     }
-} 
+}
