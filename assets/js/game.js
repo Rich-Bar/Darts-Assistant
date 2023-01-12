@@ -305,7 +305,13 @@ $(function(){
         let turn = 0;
         let player = database.players.find(p=>p.id === $('.accordion-collapse.show').parents('.player').data('id'));
         if(player == null) return;
-        if(currentTurn == null || currentTurn.throw1 == null){
+        if(currentTurn != null && currentTurn.throw2 == null){
+            turn = 2;
+            currentTurn["throw2"] = {points:scored, angle:angle, distance: distance};
+        }else if(currentTurn != null && currentTurn.throw3 == null){
+            turn=3;
+            currentTurn["throw3"] = {points:scored, angle:angle, distance: distance};
+        }else{
             turn = 1;
             currentTurn =  {
                 playerId: player.id,
@@ -313,12 +319,6 @@ $(function(){
                 throw2:null,
                 throw3:null
             };
-        }else if( currentTurn.throw2 == null){
-            turn = 2;
-            currentTurn["throw2"] = {points:scored, angle:angle, distance: distance};
-        }else if( currentTurn.throw3 == null){
-            turn=3;
-            currentTurn["throw3"] = {points:scored, angle:angle, distance: distance};
         }
         return {turn:turn, points:scored, angle:angle, distance:distance};
         
