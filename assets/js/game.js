@@ -53,7 +53,9 @@ $(function(){
     
     //First Start of Assistant
     if(database == null){
-        
+        if(localStorage.getItem('dartsAssistantAutosave') == "true"){
+            window.database = JSON.parse(localStorage.getItem('dartsAssistantDB'));
+        }
     //Show Game Screen
     }else if(database.currentGame != null){
 
@@ -273,7 +275,7 @@ $(function(){
         switch(type+"".toLowerCase()){
             case "game":
                 let avrg = 0, total = 0, throws = 0;
-                obj.turns.each((turn)=>{
+                obj.turns.forEach((turn)=>{
                     if(filter == null || turn.playerId === filter){
                         if(turn.throw1 && turn.throw1.over != true){
                             throws++;
