@@ -146,6 +146,7 @@ $(function(){
                 database.currentGame.turns.push(window.currentTurn);
                 $("section.game .accordion-collapse .input-group input").val("").removeAttr('value');
                 $("section.game > .board > span").remove();
+                $(e.target).siblings()[0].focus({preventScroll: true});
             }
         });
         $("section.game .accordion-collapse .input-group > button > input").pressEnter((e)=>{
@@ -269,6 +270,35 @@ $(function(){
         $("section.user-details").removeClass('visually-hidden');
     });
     //Calculate Throw 
+    window.getPlayerStats = function(obj, type, filter){
+        switch(type+"".toLowerCase()){
+            case "game":
+                let avrg = 0, total = 0, throws = 0;
+                obj.turns.each((turn)=>{
+                    if(filter != null && turn.playerId !== filter)
+                    if(turn.throw1){
+                        throws++;
+                        total += turn.throw1.points;
+                    }
+                });
+                return {
+                    average: 0
+
+                }
+            break;
+            case "throw":
+
+            break;
+            default:
+
+        }
+    }
+    window.calculateCoordinates = function(distance, angle) {
+        return { 
+            x: 50 + 50*(distance * Math.cos(((angle + 189) % 360) * Math.PI / 180)),
+            y: 50 + 50*(distance * Math.sin(((angle + 189) % 360) * Math.PI / 180))
+        };
+    }
     window.calculateThrow = function(e){
         let totalPoints = 0;
         $(e.target).parent().find("> input").each(function(){
@@ -286,22 +316,21 @@ $(function(){
             y:$('section.game > .board img').innerHeight()/2
         };
         let angle = (Math.atan2(center.y - y, center.x - x)* 180 / Math.PI + 189)%360;
-        let distance = Math.sqrt(Math.pow(center.y - y, 2) + Math.pow(center.x - x, 2));
+        let distance = Math.sqrt(Math.pow(center.y - y, 2) + Math.pow(center.x - x, 2))/(boardSize/2);
         
         let scored = 0;
-        if(distance/(boardSize/2) < 0.032){
+        if(distance < 0.032){
             scored = 50;                                // Bullseye
-        }else if(distance/(boardSize/2) < 0.072){
+        }else if(distance < 0.072){
             scored = 25;                                // Center Green
-        }else if(distance/(boardSize/2) > 0.433 && distance/(boardSize/2) < 0.473){
+        }else if(distance > 0.433 && distance < 0.473){
             scored = fields[Math.floor(angle/18)] * 3;  // Tripples
-        }else if(distance/(boardSize/2) > 0.709 && distance/(boardSize/2) < 0.753){
+        }else if(distance > 0.709 && distance < 0.753){
             scored = fields[Math.floor(angle/18)] * 2;  // Doubles
-        }else if(distance/(boardSize/2) > 0.753){       // Out
+        }else if(distance > 0.753){       // Out
         }else{
             scored = fields[Math.floor(angle/18)];      // Normal
         }
-        //console.log(angle, distance,distance/(boardSize/2), fields[Math.floor(angle/18)]);
         let turn = 0;
         let player = database.players.find(p=>p.id === $('.accordion-collapse.show').parents('.player').data('id'));
         if(player == null) return;
