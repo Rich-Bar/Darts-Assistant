@@ -269,24 +269,34 @@ $(function(){
         $("section.user-details > h1 > span").text("Create new");
         $("section.user-details").removeClass('visually-hidden');
     });
-    //Calculate Throw 
-    window.getPlayerStats = function(obj, type, filter){
+    window.getPlayerStats = function(obj, type, filter, ...args){
         switch(type+"".toLowerCase()){
             case "game":
                 let avrg = 0, total = 0, throws = 0;
                 obj.turns.each((turn)=>{
-                    if(filter != null && turn.playerId !== filter)
-                    if(turn.throw1){
-                        throws++;
-                        total += turn.throw1.points;
-                    }
+                    if(filter == null || turn.playerId === filter){
+                        if(turn.throw1 && turn.throw1.over != true){
+                            throws++;
+                            total += turn.throw1.points;
+                        }
+                        if(turn.throw2 && turn.throw2.over != true){
+                            throws++;
+                            total += turn.throw2.points;
+                        }
+                        if(turn.throw3 && turn.throw3.over != true){
+                            throws++;
+                            total += turn.throw3.points;
+                        }
+                    };
                 });
+                avrg = total / throws;
                 return {
-                    average: 0
-
+                    average: avrg,
+                    total: total,
+                    throws: throws
                 }
             break;
-            case "throw":
+            case "turn":
 
             break;
             default:
@@ -299,6 +309,7 @@ $(function(){
             y: 50 + 50*(distance * Math.sin(((angle + 189) % 360) * Math.PI / 180))
         };
     }
+    //Calculate Throw 
     window.calculateThrow = function(e){
         let totalPoints = 0;
         $(e.target).parent().find("> input").each(function(){
