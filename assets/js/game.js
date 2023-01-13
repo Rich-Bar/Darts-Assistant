@@ -144,7 +144,7 @@ $(function(){
             else $(e.target).parent().find(">button > input").focus();
         });
         $("section.game .accordion-collapse .input-group > button").click(function(e){
-            if(typeof window.currentTurn !== "undefined" && typeof window.currentTurn.throw1 !== "undefined" && typeof window.currentTurn.throw2 !== "undefined" && typeof window.currentTurn.throw3 !== "undefined" && typeof window.currentTurn.playerId !== "undefined"){
+            if(window.currentTurn != null && window.currentTurn.throw1 !=null && window.currentTurn.throw2 != null && window.currentTurn.throw3 != null && window.currentTurn.playerId != null){
                 database.currentGame.turns.push(window.currentTurn);
                 $("section.game .accordion-collapse .input-group input").val("").removeAttr('value');
                 $("section.game > .board > span").remove();
