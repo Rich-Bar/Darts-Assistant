@@ -15,6 +15,57 @@
 
 <body>
 
+    <header>
+        <a href="index.html" class="back">Back</a>
+        <h1>New Game</h1>
+    </header>
+    <section class="new-game">
+        <div class="card">
+            <div class="season_tabs">
+                <div class="season_tab">
+                    <input type="radio" id="tab-1" name="tab-group-1" checked>
+                    <label for="tab-1">Players</label>
+                    <div class="season_content">
+                        <div class="player-selector"></div>
+                    </div>
+                </div>
+                <div class="season_tab">
+                    <input type="radio" id="tab-2" name="tab-group-1" disabled>
+                    <label for="tab-2">Mode</label>
+                    <div class="season_content">
+                        <span>2</span>
+                    </div>
+                </div>
+                <div class="season_tab">
+                    <input type="radio" id="tab-3" name="tab-group-1" disabled>
+                    <label for="tab-3">Start</label>
+                    <div class="season_content">
+                        <span>3</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script>
+        
+        $(() => {
+            (window.players||[]).forEach(player => {
+                $('section.new-game .season_content .player-selector').append('<div data-id="'+player.id+'">'+player.username+'</div>');
+            });
+            $('section.new-game .season_content .player-selector > div').on('click touchdown', (e)=>{
+                let playerDiv = $(e.currentTarget);
+                if(playerDiv.hasClass('active')){
+                    let ix = playerDiv.find('.index'), di = parseInt(ix.text());
+                    $("section.new-game .season_content .player-selector > div .index").each((i,e)=>{
+                        if(parseInt($(e).text()) > di) $(e).text(parseInt($(e).text())-1);
+                    });
+                    playerDiv.removeClass('active').find('.index').remove();
+                }else{
+                    playerDiv.addClass('active').append('<span class="index">'+($("section.new-game .season_content .player-selector > div .index").length+1)+"</span>");
+                }
+            });
+        });
+    </script>
     <script src="js/base.js"></script>
 </body>
 
