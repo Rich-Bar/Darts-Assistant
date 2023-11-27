@@ -1,58 +1,102 @@
 $(() => {
 
+
     window.players = [{
         playerId: 13,
         username: "drich",
         picture: "none",
-        sem: "table"
+        sem: "table",
+        playerGames: {}
     },{
         playerId: 15,
         username: "felix",
         picture: "none",
-        sem: "table"
+        sem: "table",
+        playerGames: {}
     }];
+
+    window.currentGame = {
+        gameId: "333",
+        started: "27.11.2023 24:59",
+        players: players,
+        winner: players.at(0),
+        currentPlayer: players.at(1),
+        mode: {
+            sets: 2,
+            legs: 2,
+            bestOfSets: true,
+            bestOfLegs: false,
+            doubleOut: true,
+            doubleIn: false,
+            startingMode: {
+                newGameAction: "Bullseye",
+                newSetAction: "",
+                newLegAction: ""
+            }
+        }
+    };
+
+    window.throw = {
+        score: 50,
+        x: null,
+        y: null,
+        finish: false,
+        over: false
+    };
+
+    window.turn = {
+        playerId: players.at(0).playerId,
+        Throw: [window.throw],
+        timestamp: "24:00Uhr"
+    }
+
+    window.turngroup = {
+        type: "set",
+        turngroup: [{
+            type: "leg",
+            turngroup: [window.turn],
+            playerOrder: players,
+            winner: {}
+        }],
+        playerOrder: players,
+        winner: {}
+    }
     //console.log(window.dartPlayers);
     window.games = [{
         gameId: "333",
         started: "27.11.2023 24:59",
         players: players,
+        winner: players.at(0),
         mode: {
             sets: 2,
             legs: 2,
-            firstTo: true,
+            bestOfSets: true,
+            bestOfLegs: false,
             doubleOut: true,
             doubleIn: false,
-            startingMode: "Bullseye"
+            startingMode: {
+                newGameAction: "Bullseye",
+                newSetAction: "",
+                newLegAction: ""
+            }
         },
         turngroup: {
-            turngroup: {},
-            playerOrder: players,
-            winner: {}
-        }
-    },{
-        gameId: "444",
-        started: "27.11.2023 22:53",
-        players: players,
-        mode: {
-            sets: 2,
-            legs: 2,
-            firstTo: true,
-            doubleOut: true,
-            doubleIn: false,
-            startingMode: "Bullseye"
-        },
-        turngroup: {
-            turngroup: {},
+            type: "leg",
+            turngroup: [window.turn],
             playerOrder: players,
             winner: {}
         }
     }];
     //console.log(window.games);
 
-
+    // settings
     window.settings = {
-
+        darkMode: false,
+        defaultGameMode: "501",
+        defaultSem: "total"
     };
+    // set settings as cookie
+    document.cookie = "settings="+JSON.stringify(settings)+" expires=Thu, 18 Dec 2024 12:00:00 UTC; path=/";
 
 
 // open (or create) db
@@ -75,7 +119,6 @@ $(() => {
 
         // Add some data
         gamesStore.put(games.at(0));
-        gamesStore.put(games.at(1));
         playersStore.put(players.at(0));
         playersStore.put(players.at(1));
 
