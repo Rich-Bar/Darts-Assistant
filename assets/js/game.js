@@ -1,3 +1,12 @@
+/* Analyze file for errors and fix them in this file */ 
+/* Generate UUID */ 
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 var rndPlayerUserId = generateUUID();
 var rndGameId= generateUUID();
 var currentTurn = null;
@@ -49,18 +58,61 @@ $(function(){
         });  
      };
     //Load previous Games
-    //window.database = JSON.parse(localStorage.get("dartAssistantDB"));
-    
-    //First Start of Assistant
-    if(database == null){
-        if(localStorage.getItem('dartsAssistantAutosave') == "true"){
-            window.database = JSON.parse(localStorage.getItem('dartsAssistantDB'));
-        }
-    //Show Game Screen
-    }else if(database.currentGame != null){
-
-        
+    if(localStorage.getItem('dartsAssistantAutosave') == "true"){
+        $('section.home .autosave')[0].checked = true;
+        window.autoSave = setInterval(()=>{
+            localStorage.setItem('dartsAssistantDB', JSON.stringify(window.database));
+            reloadPlayers();
+        },250);
     }
+    $('section.home .autosave').change((e)=>{
+        if($(e.target).is(':checked')){ 
+            localStorage.setItem('dartsAssistantAutosave', "true");
+            window.autoSave = setInterval(()=>{
+                localStorage.setItem('dartsAssistantDB', JSON.stringify(window.database));
+            },250);
+        }else{
+            localStorage.setItem('dartsAssistantAutosave', "");
+        } 
+    });
+    //Load saved Players and Games if autosave is enabled
+    if(localStorage.getItem('dartsAssistantAutosave') == "true"){
+        reloadPlayers();
+        reloadGames();
+    }
+    //Reload Games
+    function reloadGames(){
+        $('section.game-creator').addClass('visually-hidden');
+        $('section.game').removeClass('visually-hidden');
+        $('section.game .player-overview').html('');
+        let games = window.database.games;
+        games.forEach(loadGame);
+    }
+    //Reload Players
+    function reloadPlayers(){
+        $('section.game-creator').addClass('visually-hidden');
+        $('section.game').removeClass('visually-hidden');
+        $('section.game .player-overview').html('');
+        let players = window.database.players;
+        let loadPlayer = (player)=>{
+            let playerView = `
+            <div class="player-overview">
+                <div class="player-name">${player.username}</div>
+                <div class="player-image"><img src="${player.image}"></div>
+            </div>`;
+            $('section.game .player-overview').append(playerView);
+        }
+        players.forEach(loadPlayer);
+    }
+    //Reload Modes
+    function reloadModes(){
+        $('section.game-creator').addClass('visually-hidden');
+        $('section.game').removeClass('visually-hidden');
+        $('section.game .player-overview').html('');
+        let modes = window.database.modes;
+        modes.forEach(loadMode);
+    }
+    
     //Section-Home Buttons
     $('section.home .new-game').click(()=>{
         $('section.game-creator').removeClass('visually-hidden');
@@ -206,6 +258,17 @@ $(function(){
     };
     $('section.user-selector div.player-selection > span').click(selectUser);
     //Section User Details
+    window.reloadPlayers = function(){
+        if(window.database && window.database.players && window.database.players.length){
+            window.database.players.forEach((p)=>{
+                let newPlayer = $('section.user-selector .player-selection .template').clone().removeClass('template');
+                newPlayer.find('span').html(p.username + '<i class="fa fa-pencil edit-user" style="margin-left: 0.666em;"></i>');
+                newPlayer.appendTo('section.user-selector .player-selection');
+                newPlayer.click(selectUser);
+                newPlayer.find('i').click(editUser);
+            });
+        }
+    };
     $('section.user-details .save-btn').click((e)=>{
         let existing = database.players.find((p)=>p.username==$('section.user-details input[name="username"]').val());
         window.database.players.push({
@@ -215,12 +278,8 @@ $(function(){
             image: $("section.user-details img.profilePicture").attr('src'),
             gameIds: existing != null && existing.gameIds != $('section.user-details input[name="all-games"]').val()?existing.gameIds:$('section.user-details input[name="all-games"]').val()
         });
-        let newPlayer = $('section.user-selector .player-selection .template').clone().removeClass('template');
-        newPlayer.find('span').html($('section.user-details input[name="username"]').val() + '<i class="fa fa-pencil edit-user" style="margin-left: 0.666em;"></i>');
-        newPlayer.appendTo('section.user-selector .player-selection');
-        newPlayer.click(selectUser);
-        newPlayer.find('i').click(editUser);
         $('section.user-details').addClass('visually-hidden');
+        reloadPlayers();
     });
     $("section.user-details input[type='file']").change((e)=>{
         let file = $("input[type=file]").get(0).files[0];
@@ -463,28 +522,13 @@ $(function(){
             $("section.game .accordion-collapse.show .input-group > button > input").focus();
         }
     });
+    
     //Player Finished Throw
     $("section.game .accordion-collapse.show .input-group > button").click((e)=>{
         $("section.game > .board > span").remove();
         setTimeout($("section.game .accordion-collapse.show .input-group > button > input").focus());
     });
 });
-
-function generateUUID() { // Public Domain/MIT
-    var d = new Date().getTime();//Timestamp
-    var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16;//random number between 0 and 16
-        if(d > 0){//Use timestamp until depleted
-            r = (d + r)%16 | 0;
-            d = Math.floor(d/16);
-        } else {//Use microseconds since page-load if supported
-            r = (d2 + r)%16 | 0;
-            d2 = Math.floor(d2/16);
-        }
-        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-    });
-}
 
 class JavascriptDataDownloader {
     constructor(data={}) {
