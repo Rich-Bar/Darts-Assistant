@@ -9,7 +9,7 @@
     <meta name="author" content="DiLight Entertainment UG (haftungsbeschränkt)">
 
     <link rel="stylesheet" href="css/base.css">
-    <link href="https://fonts.cdnfonts.com/css/noto-sans" rel="stylesheet">
+    <!--<link href="https://fonts.cdnfonts.com/css/noto-sans" rel="stylesheet">-->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 
@@ -25,14 +25,17 @@
                     <input type="radio" id="tab-1" name="tab-group-1" checked>
                     <label for="tab-1">General</label>
                     <div class="season_content">
-                        <span>1</span>
+                        <label for="darkMode">
+                            <input type="checkbox" name="darkMode"/>
+                            <span>Dark Mode</span>
+                        </label>
                     </div>
                 </div>
                 <div class="season_tab">
                     <input type="radio" id="tab-2" name="tab-group-1">
                     <label for="tab-2">Default Mode</label>
                     <div class="season_content">
-                        <span>2</span>
+                        
                     </div>
                 </div>
             </div>
