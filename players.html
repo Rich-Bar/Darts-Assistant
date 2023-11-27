@@ -14,7 +14,111 @@
 </head>
 
 <body>
+    <header>
+        <a href="index.html" class="back">Back</a><h1>Players</h1>
+    </header>
+    <section class="players">
+        <div class="card is-collapsed ">
+            <div class="card__inner js-expander">
+                <span>New Player</span>
+            </div>
+            <div class="card__expander">
+                <span class="js-collapser">x</span>
+                <form class="user-form">
+                    <img src="https://picsum.photos/500">
+                    <fieldset>
+                        <label for="username">
+                            <span>Username</span>
+                            <input name="username" value="" placeholder="Username" />
+                        </label>
+                        <label for="Score Entering Method">
+                            <span>Score Entering Method</span>
+                            <select name="sem" value="Select" invalid>
+                                <option value="total">Total Score</option>
+                                <option value="perDart">Per Dart</option>
+                                <option value="dartPosition">Dartboard Position</option>
+                            </select>
+                        </label>
+                        <button type="submit">Save</button>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </section>
+    <script>
+        $(() => {
+            (window.players||[{username:"JEns", sem:"perDart"},{username:"Felix", sem:"perDart"},{username:"Richy", sem:"perDart"},{username:"hans", sem:"perDart"}]).forEach(player => {
+                $('section.players').append(`
+                <div class="card is-collapsed ">
+                    <div class="card__inner js-expander">
+                        <span>${player.username}</span>
+                    </div>
+                    <div class="card__expander">
+                        <span class="js-collapser">x</span>
+                        <form class="user-form" data-id="${player.id}">
+                            <img src="https://picsum.photos/500">
+                            <fieldset>
+                                <label for="username">
+                                    <span>Username</span>
+                                    <input name="username" value="${player.username}" placeholder="Username"/>
+                                </label>
+                                <label for="Score Entering Method">
+                                    <span>Score Entering Method</span>
+                                    <select name="sem" value="${player.sem}" invalid>
+                                        <option value="total">Total Score</option>
+                                        <option value="perDart">Per Dart</option>
+                                        <option value="dartPosition">Dartboard Position</option>
+                                    </select>
+                                </label>
+                                <button type="submit">Save</button>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>`);
+            });
+            var $cell = $('.card');
+            $cell.find('.js-expander').click(function () {
+                var $thisCell = $(this).closest('.card');
+                if ($thisCell.hasClass('is-collapsed')) {
+                    $thisCell.removeClass('is-collapsed');
+                    $thisCell.addClass('is-expanding');
 
+                    $cell.not($thisCell).removeClass('is-expanded');
+                    $cell.not($thisCell).addClass('is-collapsing');
+                    setTimeout(function () {
+                        $thisCell.removeClass('is-expanding');
+                        $thisCell.addClass('is-expanded');
+                        $cell.not($thisCell).removeClass('is-collapsing');
+                        $cell.not($thisCell).addClass('is-collapsed');
+                    }, 150);
+                } else {
+                    $cell.removeClass('is-expanded').addClass('is-collapsed');
+                    $cell.not($thisCell).removeClass('is-inactive');
+                }
+            });
+            $cell.find('.js-collapser').click(function () {
+                $cell.removeClass('is-expanded').addClass('is-collapsed');
+                var $thisCell = $(this).closest('.card');
+                $cell.not($thisCell).removeClass('is-inactive');
+            });
+            $('section.players .user-form button').on('click touchdown', (e) => {
+                let form = $(e.currentTarget).parents('form');
+                if (form.attr('data-id')) {
+                    window.players.forEach((player) => {
+                        if (player.id == form.attr('data-id')) {
+                            player.username = form.find('input[name="username"]').val();
+                            player.sem = form.find('select[name="sem"]').val();
+                        }
+                    })
+                } else {
+                    window.players.push({
+                        username: form.find('input[name="username"]').val(),
+                        sem: form.find('select[name="sem"]').val()
+                    });
+                }
+            });
+        });
+    </script>
     <script src="js/base.js"></script>
 </body>
 

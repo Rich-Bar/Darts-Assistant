@@ -36,15 +36,36 @@ section:not(.breakout-grid) {
     padding: 2rem;
 }
 
-section > h1, section > h2, section > h3, section > h4{
+section>h1,
+section>h2,
+section>h3,
+section>h4 {
     border-bottom: 1px solid #6661;
     padding-bottom: 0.25em;
+}
+
+header {
+    position: relative;
+    padding: 1em;
+    background: #fff;
+    box-shadow: 0 0 1em #0003;
+    margin-bottom: 1em;
+    font-variant: all-petite-caps;
+}
+header .back{
+    position: absolute;
+    left: 2em;
+    top: 50%;
+    transform: translateY(-40%);
+    text-decoration: none;
+    font-weight: 500;
+    color: #888;
 }
 
 button,
 .button {
     border: unset;
-    padding: 0.5em 1em;
+    padding: 0.25em 1em;
     font: inherit;
     color: #fff;
     background-color: #222;
@@ -71,7 +92,8 @@ button.outline:hover,
     box-shadow: 0 0 3px #fff;
 }
 
-section.main-menu{
+/* Section Main Menu */
+section.main-menu {
     display: flex;
     font-size: 1.5rem;
     padding: 1em;
@@ -83,21 +105,25 @@ section.main-menu{
     height: 100vh;
     height: 100svh;
 }
-section.main-menu h2{
+
+section.main-menu h2 {
     text-shadow: 0 1px 2px #2222;
     padding: 0 1.5rem;
 }
-section.main-menu hr{
+
+section.main-menu hr {
     margin: 1em -1.5em 1.85rem;
     border-top: 1px solid #fff;
 }
-section.main-menu .menu-actions{
+
+section.main-menu .menu-actions {
     display: flex;
     font-size: 1rem;
     flex-direction: column;
     gap: 1em;
 }
-section.main-menu .menu-card{
+
+section.main-menu .menu-card {
     display: flex;
     font-size: 1rem;
     flex-direction: column;
@@ -107,14 +133,244 @@ section.main-menu .menu-card{
     background: #fff;
     box-shadow: 0 10px 25px #00000033;
 }
-section.main-menu .menu-actions > a{
+
+section.main-menu .menu-actions>a {
     padding: 0.25em 1em;
     color: #222;
     border: 1px solid #6666;
     text-decoration: none;
     transition: all 200ms linear;
 }
-section.main-menu .menu-actions > a:hover{
+
+section.main-menu .menu-actions>a:hover {
     background: #111;
     color: #fff;
+}
+
+/* Section Profiles */
+section.players {
+    padding: 15px;
+    display: flex;
+    flex-flow: row wrap;
+}
+
+section.players .card {
+    margin: 15px;
+    width: calc((100% / 3) - 30px);
+    transition: all 0.2s ease-in-out;
+}
+
+@media screen and (max-width: 991px) {
+    section.players .card {
+        width: calc((100% / 2) - 30px);
+    }
+}
+
+@media screen and (max-width: 767px) {
+    section.players .card {
+        width: 100%;
+    }
+}
+
+section.players .card:hover .card__inner {
+    background-color: #444;
+    transform: scale(1.05);
+}
+
+section.players .card__inner {
+    width: 100%;
+    padding: 30px;
+    position: relative;
+    cursor: pointer;
+    background-color: #949fb0;
+    color: #eceef1;
+    font-size: 1.5em;
+    text-align: center;
+    transition: all 0s ease-in-out;
+}
+
+section.players .card__inner:after {
+    transition: all 0s ease-in-out;
+}
+
+section.players .card__expander {
+    transition: all 0.35s ease-in-out;
+    background-color: #333a45;
+    width: 100%;
+    position: relative;
+    z-index: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #eceef1;
+    font-size: 1.5em;
+}
+
+section.players .card__expander .js-collapser {
+    font-size: 0.75em;
+    position: absolute;
+    top: 0.2em;
+    right: 1em;
+    cursor: pointer;
+    opacity: 0.75;
+}
+
+section.players .card__expander .js-collapser:hover {
+    opacity: 1;
+}
+
+section.players .card.is-collapsed .card__inner:after {
+    content: "";
+    opacity: 0;
+}
+
+section.players .card.is-collapsed .card__expander {
+    z-index: 1;
+    max-height: 0;
+    min-height: 0;
+    overflow: hidden;
+    margin-top: 30px;
+    opacity: 0;
+}
+
+section.players .card.is-expanded .card__inner {
+    background-color: #222;
+}
+
+section.players .card.is-expanded .card__inner:after {
+    content: "";
+    opacity: 1;
+    display: block;
+    height: 0;
+    width: 0;
+    position: absolute;
+    bottom: -30px;
+    left: calc(50% - 15px);
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 15px solid #333a45;
+}
+
+section.players .card.is-expanded .card__expander {
+    position: relative;
+    z-index: 1;
+    max-height: 1000px;
+    min-height: 200px;
+    overflow: visible;
+    margin-top: 30px;
+    opacity: 1;
+}
+
+section.players .card.is-expanded:hover .card__inner {
+    transform: scale(1);
+}
+
+section.players .card.is-collapsing .card__expander {
+    z-index: 0;
+    max-height: 0;
+    min-height: 0;
+    overflow: hidden;
+    margin-top: 30px;
+    opacity: 0;
+}
+
+section.players .card.is-expanding .card__inner {
+    background-color: #222;
+}
+
+section.players .card.is-expanding .card__expander {
+    position: relative;
+    z-index: 0;
+    max-height: 1000px;
+    min-height: 200px;
+    overflow: visible;
+    margin-top: 30px;
+    opacity: 1;
+}
+
+section.players .card.is-expanding:hover .card__inner {
+    transform: scale(1);
+}
+
+section.players .card.is-inactive .card__inner {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+section.players .card.is-inactive:hover .card__inner {
+    background-color: #949fb0;
+    transform: scale(1);
+}
+
+@media screen and (min-width: 992px) {
+    section.players .card:nth-of-type(3n + 2) .card__expander {
+        margin-left: calc(-100% - 30px);
+    }
+
+    section.players .card:nth-of-type(3n + 3) .card__expander {
+        margin-left: calc(-200% - 60px);
+    }
+
+    section.players .card:nth-of-type(3n + 4) {
+        clear: left;
+    }
+
+    section.players .card__expander {
+        width: calc(300% + 60px);
+    }
+}
+
+@media screen and (min-width: 768px) and (max-width: 991px) {
+    section.players .card:nth-of-type(2n + 2) .card__expander {
+        margin-left: calc(-100% - 30px);
+    }
+
+    section.players .card:nth-of-type(2n + 3) {
+        clear: left;
+    }
+
+    section.players .card__expander {
+        width: calc(200% + 30px);
+    }
+}
+
+form.user-form{
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+form.user-form fieldset{
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    border: none;
+    padding: 0;
+    justify-content: flex-end;
+    gap: 1em;
+}
+
+form.user-form img{
+    flex-grow: 1;
+    max-width: 40%;
+    max-height: 350px;
+    object-fit: cover;
+    object-position: center;
+}
+
+form.user-form label{
+    display: flex;
+    padding: 0 2em;
+    flex-direction: column;
+    text-align: left;
+}
+
+form.user-form label select,
+form.user-form label input{
+    border: 1px solid #999;
+    padding: 0.25em 1em;    
+    font-size: 1rem;
+    font-family: 'Noto Sans', sans-serif;
 }
