@@ -37,7 +37,7 @@ window.calculateScore = function(x, y){
     }else{
         scored = fields[Math.floor(angle/18)];      // Normal
     }
-    return {points:scored, angle:angle, distance:distance};
+    return {points:scored, angle:angle, distance:distance, x:x, y:y};
 }
 
 window.dbloaded = ()=>{

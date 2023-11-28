@@ -14,24 +14,7 @@ function generateUUID() { // Public Domain/MIT
     });
 }
 
-class JavascriptDataDownloader {
-    constructor(data={}) {
-        this.data = data;
-    }
-    download (type_of = "application/json", filename= "Darts-Assistant-Save.json") {
-        let body = document.body;
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(new Blob([JSON.stringify(this.data, null, 2)], {
-            type: type_of
-        }));
-        a.setAttribute("download", filename);
-        body.appendChild(a);
-        a.click();
-        body.removeChild(a);
-    }
-}
-
-window.saveDB = ()=>{// set settings as cookie
+window.saveDB = (callback)=>{// set settings as cookie
     document.cookie = "settings="+JSON.stringify((window.settings||{}))+" expires=Thu, 18 Dec 2024 12:00:00 UTC; path=/";
     // Create the schema
     var open = window.indexedDB.open("DartsDatabase", 1);
@@ -40,28 +23,38 @@ window.saveDB = ()=>{// set settings as cookie
         var db = open.result;
         var gamesStore = db.createObjectStore("GamesStorage", {keyPath: "id"});
         var playersStore = db.createObjectStore("PlayersStorage", {keyPath: "id"})
-        var ActiveGamesStore = db.createObjectStore("ActiveGamesStorage", {keyPath: "id"})
+        var activeGamesStore = db.createObjectStore("ActiveGamesStorage", {keyPath: "id"})
     };
 
     open.onsuccess = function () {
         // Start a new transaction
         var db = open.result;
         var txGames = db.transaction("GamesStorage", "readwrite");
+        var txActiveGames = db.transaction("ActiveGamesStorage", "readwrite");
         var txPlayers = db.transaction("PlayersStorage", "readwrite");
         var gamesStore = txGames.objectStore("GamesStorage");
+        var activeGamesStore = txActiveGames.objectStore("ActiveGamesStorage");
         var playersStore = txPlayers.objectStore("PlayersStorage");
-
+        var waitFor = 3;
         // Add some data
         games.forEach(game => gamesStore.put(game));
+        activeGames.forEach(game => activeGamesStore.put(game));
         players.forEach(player => playersStore.put(player));
 
         // Close the db when the transaction is done
+        txActiveGames.oncomplete = function () {
+            db.close();
+            if(--waitFor == 0 && callback) callback();
+        };
+        // Close the db when the transaction is done
         txGames.oncomplete = function () {
                 db.close();
+                if(--waitFor == 0 && callback) callback();
         };
         // Close the db when the transaction is done
         txPlayers.oncomplete = function () {
                 db.close();
+                if(--waitFor == 0 && callback) callback();
         };
     }
 };
@@ -161,7 +154,32 @@ $(() => {
                 </div>
             </div>`);
         });
+        (window.activeGames||[]).forEach((activeGame)=>{
+
+        });
         // Setup Listeners
+        $('button.start-game').on("click touchdown", ()=>{
+            window.currentGame = {
+                id: generateUUID(),
+                players: $('.player-selector > div.active').map((i,el) => $(el).attr('data-id')).get(),
+                startingPoints: $('.game-settings input[name="startingPoints"]').val(),
+                legs: $('.game-settings input[name="legs"]').val(),
+                sets: $('.game-settings input[name="sets"]').val(),
+                bestOfLegs: $('.game-settings input[name="bestOfLegs"]').is(':checked'),
+                bestOfSets: $('.game-settings input[name="bestOfSets"]').is(':checked'),
+                doubleIn: $('.game-settings input[name="doubleIn"]').is(':checked'),
+                doubleOut: $('.game-settings input[name="doubleOut"]').is(':checked'),
+                gameAction: $('.game-settings select[name="gameAction"]').val(),
+                legAction: $('.game-settings select[name="legAction"]').val(),
+                setAction: $('.game-settings select[name="setAction"]').val(),
+                turns:[]
+            };
+            window.activeGames = [...(window.activeGames||[]), currentGame];
+            saveDB(()=>{window.location.href = "game.html";});
+        });
+        $('button.continue-game').on("click touchdown", ()=>{
+
+        });
         $('section.new-game .season_content .player-selector > div').on('click touchdown', (e)=>{
             let playerDiv = $(e.currentTarget);
             if(playerDiv.hasClass('active')){
@@ -185,11 +203,40 @@ $(() => {
                     }
                 })
             } else {
-                window.players.push({
-                    id: Math.floor(Math.random()*0xFFFFFFFF),
+                let player = {
+                    id: generateUUID(),
                     username: form.find('input[name="username"]').val(),
                     sem: form.find('select[name="sem"]').val()
-                });
+                };
+                window.players.push(player);
+                $('section.players').append(`
+                <div class="card is-collapsed ">
+                    <div class="card__inner js-expander">
+                        <span>${player.username}</span>
+                    </div>
+                    <div class="card__expander">
+                        <span class="js-collapser">x</span>
+                        <form class="user-form" data-id="${player.id}">
+                            <img src="https://picsum.photos/5${Math.floor(Math.random()*99)}">
+                            <fieldset>
+                                <label for="username">
+                                    <span>Username</span>
+                                    <input name="username" value="${player.username}" placeholder="Username"/>
+                                </label>
+                                <label for="Score Entering Method">
+                                    <span>Score Entering Method</span>
+                                    <select name="sem" value="${player.sem}" invalid>
+                                        <option value="total">Total Score</option>
+                                        <option value="perDart">Per Dart</option>
+                                        <option value="dartPosition">Dartboard Position</option>
+                                    </select>
+                                </label>
+                                <button type="submit">Save</button>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>`);
+                saveDB();
             }
         });
         //Expandable Player-Cards
