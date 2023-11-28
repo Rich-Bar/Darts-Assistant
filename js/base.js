@@ -1,3 +1,71 @@
+function generateUUID() { // Public Domain/MIT
+    var d = new Date().getTime();//Timestamp
+    var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16;//random number between 0 and 16
+        if(d > 0){//Use timestamp until depleted
+            r = (d + r)%16 | 0;
+            d = Math.floor(d/16);
+        } else {//Use microseconds since page-load if supported
+            r = (d2 + r)%16 | 0;
+            d2 = Math.floor(d2/16);
+        }
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+}
+
+class JavascriptDataDownloader {
+    constructor(data={}) {
+        this.data = data;
+    }
+    download (type_of = "application/json", filename= "Darts-Assistant-Save.json") {
+        let body = document.body;
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([JSON.stringify(this.data, null, 2)], {
+            type: type_of
+        }));
+        a.setAttribute("download", filename);
+        body.appendChild(a);
+        a.click();
+        body.removeChild(a);
+    }
+}
+
+window.saveDB = ()=>{// set settings as cookie
+    document.cookie = "settings="+JSON.stringify((window.settings||{}))+" expires=Thu, 18 Dec 2024 12:00:00 UTC; path=/";
+    // Create the schema
+    var open = window.indexedDB.open("DartsDatabase", 1);
+    
+    open.onupgradeneeded = function () {
+        var db = open.result;
+        var gamesStore = db.createObjectStore("GamesStorage", {keyPath: "id"});
+        var playersStore = db.createObjectStore("PlayersStorage", {keyPath: "id"})
+        var ActiveGamesStore = db.createObjectStore("ActiveGamesStorage", {keyPath: "id"})
+    };
+
+    open.onsuccess = function () {
+        // Start a new transaction
+        var db = open.result;
+        var txGames = db.transaction("GamesStorage", "readwrite");
+        var txPlayers = db.transaction("PlayersStorage", "readwrite");
+        var gamesStore = txGames.objectStore("GamesStorage");
+        var playersStore = txPlayers.objectStore("PlayersStorage");
+
+        // Add some data
+        games.forEach(game => gamesStore.put(game));
+        players.forEach(player => playersStore.put(player));
+
+        // Close the db when the transaction is done
+        txGames.oncomplete = function () {
+                db.close();
+        };
+        // Close the db when the transaction is done
+        txPlayers.oncomplete = function () {
+                db.close();
+        };
+    }
+};
+
 $(() => {
     function getDb(callback){
         var open = window.indexedDB.open("DartsDatabase", 1);
@@ -57,42 +125,11 @@ $(() => {
     }
 
     function buildUI() {
-        // Autosave to IndexedDB
-        setInterval(function(){// set settings as cookie
-            document.cookie = "settings="+JSON.stringify((window.settings||{}))+" expires=Thu, 18 Dec 2024 12:00:00 UTC; path=/";
-            // Create the schema
-            var open = window.indexedDB.open("DartsDatabase", 1);
-            
-            open.onupgradeneeded = function () {
-                var db = open.result;
-                var gamesStore = db.createObjectStore("GamesStorage", {keyPath: "id"});
-                var playersStore = db.createObjectStore("PlayersStorage", {keyPath: "id"})
-                var ActiveGamesStore = db.createObjectStore("ActiveGamesStorage", {keyPath: "id"})
-            };
-    
-            open.onsuccess = function () {
-                // Start a new transaction
-                var db = open.result;
-                var txGames = db.transaction("GamesStorage", "readwrite");
-                var txPlayers = db.transaction("PlayersStorage", "readwrite");
-                var gamesStore = txGames.objectStore("GamesStorage");
-                var playersStore = txPlayers.objectStore("PlayersStorage");
-    
-                // Add some data
-                games.forEach(game => gamesStore.put(game));
-                players.forEach(player => playersStore.put(player));
-    
-                // Close the db when the transaction is done
-                txGames.oncomplete = function () {
-                        db.close();
-                };
-                // Close the db when the transaction is done
-                txPlayers.oncomplete = function () {
-                        db.close();
-                };
-            }
-        }, 15000);
+        if(window.dbloaded)window.dbloaded();
 
+        // Autosave to IndexedDB
+        setInterval(saveDB, 15000);
+        
         // Append relevant UI components
         (window.players||[]).forEach((player) => {
             $('section.new-game .season_content .player-selector').append('<div data-id="'+player.id+'">'+player.username+'</div>');
@@ -182,104 +219,16 @@ $(() => {
             $cell.not($thisCell).removeClass('is-inactive');
         });
     }
+    // JQuery pressEnter event
+    $.fn.pressEnter = function(fn) {  
+        return this.each(function() {  
+            $(this).bind('enterPress', fn);
+            $(this).keyup(function(e){
+                if(e.keyCode == 13){$(this).trigger("enterPress", e);}
+            })
+        });  
+     };
 
     getDb(buildUI);
-
-   /*
-   window.players = [{
-        playerId: 17,
-        username: "prich",
-        picture: "none",
-        sem: "table",
-        playerGames: {}
-    },{
-        playerId: 15,
-        username: "felix",
-        picture: "none",
-        sem: "table",
-        playerGames: {}
-    }];
-
-    window.currentGame = {
-        gameId: "666",
-        started: "27.11.2023 24:59",
-        players: players,
-        winner: players.at(0),
-        currentPlayer: players.at(1),
-        mode: {
-            sets: 2,
-            legs: 2,
-            bestOfSets: true,
-            bestOfLegs: false,
-            doubleOut: true,
-            doubleIn: false,
-            startingMode: {
-                newGameAction: "Bullseye",
-                newSetAction: "",
-                newLegAction: ""
-            }
-        }
-    };
-
-    window.throw = {
-        score: 50,
-        x: null,
-        y: null,
-        finish: false,
-        over: false
-    };
-
-    window.turn = {
-        id: players.at(0).playerId,
-        throws: [window.throw],
-        timestamp: "24:00Uhr"
-    }
-
-    window.turngroup = {
-        type: "set",
-        turngroup: [{
-            type: "leg",
-            turngroup: [window.turn],
-            playerOrder: players,
-            winner: {}
-        }],
-        playerOrder: players,
-        winner: {}
-    }
-    //console.log(window.dartPlayers);
-    window.games = [{
-        gameId: "333",
-        started: "27.11.2023 24:59",
-        players: players,
-        winner: players.at(0),
-        mode: {
-            sets: 2,
-            legs: 2,
-            bestOfSets: true,
-            bestOfLegs: false,
-            doubleOut: true,
-            doubleIn: false,
-            startingMode: {
-                newGameAction: "Bullseye",
-                newSetAction: "",
-                newLegAction: ""
-            }
-        },
-        turngroup: {
-            type: "leg",
-            turngroup: [window.turn],
-            playerOrder: players,
-            winner: {}
-        }
-    }];
-    //console.log(window.games);
-
-    // settings
-    window.settings = {
-        darkMode: false,
-        defaultGameMode: "501",
-        defaultSem: "total"
-    };
-    */
 
 });
