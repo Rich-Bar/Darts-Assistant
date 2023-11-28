@@ -49,10 +49,10 @@ header {
     padding: 1em;
     background: #fff;
     box-shadow: 0 0 1em #0003;
-    margin-bottom: 1em;
     font-variant: all-petite-caps;
 }
-header .back{
+
+header .back {
     position: absolute;
     left: 2em;
     top: 50%;
@@ -342,14 +342,14 @@ section.players .card.is-inactive:hover .card__inner {
     }
 }
 
-form.user-form{
+form.user-form {
     display: flex;
     width: 100%;
     flex-wrap: wrap;
     justify-content: center;
 }
 
-form.user-form fieldset{
+form.user-form fieldset {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
@@ -360,7 +360,7 @@ form.user-form fieldset{
     gap: 1em;
 }
 
-form.user-form img{
+form.user-form img {
     flex-grow: 1;
     max-width: 40%;
     max-height: 350px;
@@ -368,7 +368,7 @@ form.user-form img{
     object-position: center;
 }
 
-form.user-form label{
+form.user-form label {
     display: flex;
     padding: 0 2em;
     flex-direction: column;
@@ -376,9 +376,9 @@ form.user-form label{
 }
 
 form.user-form label select,
-form.user-form label input{
+form.user-form label input {
     border: 1px solid #999;
-    padding: 0.25em 1em;    
+    padding: 0.25em 1em;
     font-size: 1rem;
     font-family: 'Noto Sans', sans-serif;
     border-radius: 0;
@@ -386,83 +386,172 @@ form.user-form label input{
 
 /* Settings Page */
 .season_tabs {
-    position: relative;   
-    min-height: 360px; /* This part sucks */
+    position: relative;
+    min-height: 360px;
     clear: both;
-    margin: 1em 0;
-  }
-  .season_tab {
-    float: left;  
+}
+
+.season_tab {
+    float: left;
     clear: both;
     width: calc(264px + 2em);
-  }
-  .season_tab label {
-      background: #eee;
-      padding: 0.5em;
-      border: 1px solid #ccc;
-      margin-left: -1px;
-      font-size: 21px;
-      vertical-align: middle;
-      position: relative;
-      left: 1px;
-      width: 264px;
-      height: 68px;
-      display: table-cell;
-  }
-  .season_tab [type=radio] {
-    display: none;   
-  }
-  .season_content {
+}
+
+.season_tab>label {
+    background: #eee;
+    padding: 0.5em;
+    border: 1px solid #ccc;
+    margin-left: -1px;
+    font-size: 21px;
+    vertical-align: middle;
+    position: relative;
+    left: 1px;
+    width: 264px;
+    height: 68px;
+    display: table-cell;
+    box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.15);
+}
+
+.season_tab [type=radio] {
+    display: none;
+}
+
+.season_content {
     position: absolute;
     top: 0;
     left: calc(264px + 2em);
     background: white;
     right: 0;
-    bottom: 0;
     padding: 1em;
     border: 1px solid #ccc;
-   }
-  .season_content span {
-    animation: 0.5s ease-out 0s 1 slideInFromTop; 
-  }
-  [type=radio]:checked ~ label {
+    opacity: 0;
+    transition: opacity 200ms linear;
+    box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.15);
+}
+@media screen and (max-width:768px) {
+    .season_content {
+        top: unset;
+        left: unset;
+        transform: translateY(2em);
+    }
+}
+.season_content span {
+    animation: 0.5s ease-out 0s 1 slideInFromTop;
+}
+
+[type=radio]:checked~label {
     background: white;
     border-bottom: 2px solid #8bc34a;
     z-index: 2;
-  }
-  [type=radio]:checked ~ label ~ .season_content {
-    z-index: 1;
-  }
+}
 
-  /* New Game page*/
-  section.new-game .player-selector{
+[type=radio]:checked~label~.season_content {
+    z-index: 1;
+    opacity: 1;
+}
+
+.game-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.game-settings fieldset {
+    padding: 0;
+    margin: 0;
+    border: none;
+    display: flex;
+    flex-wrap: wrap;
+    flex-grow: 1;
+    align-items: flex-end;
+    gap: 0.5em;
+}
+
+.game-settings label {
+    position: relative;
+    border: none;
+    padding: 0.5em;
+    background: transparent;
+    text-align: left;
+}
+
+.game-settings label:not(.toggle) {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.game-settings label.toggle {
+    flex-shrink: 1;
+}
+
+.game-settings input[type="checkbox"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+}
+
+.game-settings input[type="checkbox"]+.checkbox-backdrop {
+    width: 0.8em;
+    height: 0.8em;
+    display: inline-block;
+    background: #f00;
+    border: 1px solid #ccc;
+    box-shadow: inset 0 0 5px #0009;
+    border-radius: 1em;
+    transition: all 200ms linear;
+}
+
+.game-settings input[type="checkbox"]:checked+.checkbox-backdrop {
+    background: #0f0;
+    color: #fff;
+}
+
+.game-settings label select,
+.game-settings label input {
+    border: 1px solid #9993;
+    background: #f9f9f9;
+    padding: 0.25em 1em;
+    font-size: 1rem;
+    font-family: 'Noto Sans', sans-serif;
+    border-radius: 0;
+}
+
+/* New Game page*/
+section.new-game .player-selector {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
     gap: 0.5em;
-  }
-  
-  section.new-game .player-selector > div{
+}
+
+section.new-game .player-selector>div {
     border-radius: 2em;
     position: relative;
     padding: 0.25em 1.25em;
     border: 1px solid #222;
     color: #222;
     transition: all 200ms linear;
-  }
-  section.new-game .player-selector > div:hover{
+}
+
+section.new-game .player-selector>div:hover {
     border: 1px solid #000;
     background: #000;
     color: #fff;
-  }
-  section.new-game .player-selector > div.active{
+}
+
+section.new-game .player-selector>div.active {
     border: 1px solid #000;
     color: #fff;
     font-weight: 600;
     background: #111;
-  }
-  section.new-game .player-selector > div .index{
+}
+
+section.new-game .player-selector>div .index {
     border: 1px solid #666;
     background: #fff;
     color: #000;
