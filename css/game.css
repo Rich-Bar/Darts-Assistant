@@ -1,0 +1,89 @@
+section.game .scoreboard {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+section.game .player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 320px;
+    background-color: #f4f4f4;
+    border: 1px #ccc;
+    box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.15);
+}
+section.game table{
+    margin: 0 1em;
+}
+
+section.game .turn td > span {
+    padding: 0.2em 0.5em;
+}
+section.game .turn td {
+    position: relative;
+    padding: 0.5em;
+}
+
+section.game .turn td > .modifier {
+    position: absolute;
+    bottom: 62%;
+    font-size: 0.7em;
+    transform: translateX(-14%);
+    color:#333;
+    text-decoration: underline;
+}
+
+
+section.game .turn input {
+    width: 4em;
+    border: 1px solid #e4e4e4;
+    padding: 0.2em 0.5em;
+    font-size: 1rem;
+}
+
+section.overlays>*:not(.backdrop):not(.visible),
+section.overlays:not(.visible) {
+    display: none;
+}
+
+section.overlays {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+section.overlays .backdrop {
+    background: #2226;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+}
+
+section.overlays .dart-board {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+section.overlays .board>span {
+    position: absolute;
+    filter: invert(100%);
+    mix-blend-mode: difference;
+    min-width: 4%;
+    min-height: 4%;
+    max-width: 4%;
+    max-height: 5%;
+    background-image: url("../files/target-svgrepo-com.svg");
+}
+
+section.overlays .board {
+    position: relative;
+    margin: 0;
+    width: min-content;
+    display: block;
+}

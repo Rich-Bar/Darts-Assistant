@@ -11,11 +11,86 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/game.css">
     <!--<link href="https://fonts.cdnfonts.com/css/noto-sans" rel="stylesheet">-->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 
 <body>
+    <section class="game">
+        <div class="scoreboard">
+            <div class="player">
+                <img width="200" height="200" src="https://picsum.photos/500">
+                <h3>Username</h3>
+                <div class="simple-stat"></div>
+                <table>
+                    <thead>
+                        <tr><th>Remaining</th><th>Scored</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr class="turn">
+                            <td>501</td>
+                            <td>
+                                <span>20</span>
+                                <span class="modifier">Double</span><span>20</span>
+                                <span>20</span>
+                            </td>
+                        </tr>
+                        <tr class="turn">
+                            <td>421</td>
+                            <td>
+                                <input class="throw" type="number" name="throw-1" maxlength="2"/>
+                                <input class="throw" type="number" name="throw-2" maxlength="2"/>
+                                <input class="throw" type="number" name="throw-3" maxlength="2"/>
+                                <span class="total"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="player">
+                <img width="200" height="200" src="https://picsum.photos/500">
+                <h3>Username</h3>
+                <div class="simple-stat"></div>
+                <table>
+                    <thead>
+                        <tr><th>Remaining</th><th>Scored</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr class="turn">
+                            <td>501</td>
+                            <td>
+                                <span>10</span>
+                                <span class="modifier">Tripple</span><span>10</span>
+                                <span>20</span>
+                            </td>
+                        </tr>
+                        <tr class="turn">
+                            <td>421</td>
+                            <td>
+                                <input class="total" type="number" name="total" maxlength="3"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="statistics">
 
+        </div>
+    </section>
+    <section class="overlays">
+        <div class="dart-board">
+            <span class="board"><img src="files/Dartboard_unlabeled.svg" style="height: min(90vw, 90vh);width: min(90vw, 90vh);object-fit: contain;"></span>
+        </div>
+        <div class="order-prompt">
+            
+        </div>
+        <div class="finished">
+            
+        </div>
+        
+        <div class="backdrop"></div>
+    </section>
     <script src="js/base.js"></script>
     <script src="js/game.js"></script>
 </body>
