@@ -172,8 +172,10 @@ $(() => {
                 gameAction: $('.game-settings select[name="gameAction"]').val(),
                 legAction: $('.game-settings select[name="legAction"]').val(),
                 setAction: $('.game-settings select[name="setAction"]').val(),
+                playing:true,
                 turns:[]
             };
+            (window.activeGames||[]).forEach((ag)=> ag.playing = false);
             window.activeGames = [...(window.activeGames||[]), currentGame];
             saveDB(()=>{window.location.href = "game.html";});
         });
