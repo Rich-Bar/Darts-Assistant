@@ -1,6 +1,31 @@
-section.game .scoreboard {
+section.game {
+    min-height: 100svh;
     display: flex;
-    justify-content: space-evenly;
+    gap: 2em;
+    flex-direction: column;
+    align-items: center;
+}
+
+section.game .statistics {
+    min-height: 100px;
+    width: 100%;
+    background: #f4f4f4cc;
+    border: 1px solid #ccc8;
+    box-shadow: 0px 1px 8px rgba(0, 0, 0, 0.1);
+}
+
+section.game .scoreboard {
+    width: max-content;
+    max-width: calc(100svw - 4em);
+    flex-grow: 1;
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+section.game .scoreboard::-webkit-scrollbar {
+    display: none;
 }
 
 section.game .player {
@@ -8,31 +33,69 @@ section.game .player {
     flex-direction: column;
     align-items: center;
     min-width: 320px;
+    width: max-content;
+    max-height: calc(100svh - calc(100px + 6em));
     background-color: #f4f4f4;
     border: 1px #ccc;
-    box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.15);
-}
-section.game table{
-    margin: 0 1em;
+    box-shadow: 0px 1px 8px rgba(0, 0, 0, 0.15);
+    transition: all 200ms linear;
 }
 
-section.game .turn td > span {
+section.game .player:not(.selected) .turn input {
+    display: none;
+}
+
+section.game .player:not(.selected) {
+    opacity: 0.75;
+}
+
+section.game .player:not(.selected):hover {
+    opacity: 0.9;
+}
+ 
+section.game .player.selected {
+    opacity: 1;
+}
+
+section.game .player h3{
+    padding: 0.5em;
+    font-variant: all-petite-caps;
+}
+
+section.game table {
+    margin: 0 1em 1em;
+    padding: 1em 0;
+    border-top: 1px solid #ccc9;
+    border-bottom: 1px solid #ccc9;
+    max-height: 100%;
+    display: block;
+    overflow: scroll;
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+section.game table::-webkit-scrollbar {
+    display: none;
+}
+
+section.game .turn td>span {
     padding: 0.2em 0.5em;
 }
+
 section.game .turn td {
     position: relative;
-    padding: 0.5em;
+    padding: 0.5em 0.5em 0;
 }
 
-section.game .turn td > .modifier {
+section.game .turn td>.modifier {
     position: absolute;
     bottom: 62%;
     font-size: 0.7em;
     transform: translateX(-14%);
-    color:#333;
+    color: #333;
     text-decoration: underline;
 }
-
 
 section.game .turn input {
     width: 4em;
