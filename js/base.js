@@ -1,34 +1,41 @@
 $(() => {
-    function getDb(callback){
-        var open = window.indexedDB.open("DartsDatabase", 1);
-        window.players = null;
-        window.games = null;
-        window.activeGames = null;
+    window.players = null;
+    window.games = null;
+    window.activeGames = null;
+    window.settings = null;
+    function getDb(callback) {
+        var open = window.indexedDB.open("DartsDatabase", 3);
+        open.onupgradeneeded = function(){
+            var db = open.result;
+            if (!db.objectStoreNames.contains("ActiveGamesStorage")) db.createObjectStore("ActiveGamesStorage", {keyPath: "gameId"});
+            if (!db.objectStoreNames.contains("GamesStorage")) db.createObjectStore("GamesStorage", {keyPath: "gameId"});
+            if (!db.objectStoreNames.contains("PlayersStorage")) db.createObjectStore("PlayersStorage", {keyPath: "playerId"});
+        };
         open.onsuccess = function () {
-            console.log("success");
             // Start a new transaction
             var db = open.result;
-            var txGames = db.transaction("GamesStorage", "readwrite");
-            var txPlayers = db.transaction("PlayersStorage", "readwrite");
             var txActiveGames = db.transaction("ActiveGamesStorage", "readwrite");
-            var gamesStore = txGames.objectStore("GamesStorage");
-            var playersStore = txPlayers.objectStore("PlayersStorage");
-            var activeGamesStore = txActiveGames("ActiveGamesStorage");
-            var getPlayers = playersStore.getAll();
-            getPlayers.onsuccess = function () {
-                console.log(getPlayers.result);
-                window.players = getPlayers.result;
-            };
-            var getGames = gamesStore.getAll()
-            getGames.onsuccess = function () {
-                window.games = getGames.result;
-                if (window.players && window.activeGames) callback();
-            };
+            var activeGamesStore = txActiveGames.objectStore("ActiveGamesStorage");
             var getActiveGames = activeGamesStore.getAll()
             getActiveGames.onsuccess = function () {
                 window.activeGames = getActiveGames.result;
-                if (window.players && window.games) callback();
             };
+            var txGames = db.transaction("GamesStorage", "readwrite");
+            var gamesStore = txGames.objectStore("GamesStorage");
+            var getGames = gamesStore.getAll()
+            getGames.onsuccess = function () {
+                window.games = getGames.result;
+            };
+            var txPlayers = db.transaction("PlayersStorage", "readwrite");
+            var playersStore = txPlayers.objectStore("PlayersStorage");
+            var getPlayers = playersStore.getAll();
+            getPlayers.onsuccess = function () {
+                window.players = getPlayers.result;
+                if(games && activeGames) {
+                    callback();
+                }
+            };
+
             // Close the db when the transaction is done
             txGames.oncomplete = function () {
                 db.close();
@@ -37,17 +44,19 @@ $(() => {
             txPlayers.oncomplete = function () {
                 db.close();
             };
+            txActiveGames.oncomplete = function () {
+                db.close();
+            };
         }
-
     }
 
-    function dummy() {
+    function pushDataIntervall() {
         setInterval(function(){
-            //console.log("push data");
+            console.log("push data");
             pushData();
-        }, 15000)
+        }, 60000)
     }
-    getDb(dummy);
+    getDb(pushDataIntervall);
    /* window.players = [{
         playerId: 17,
         username: "prich",
@@ -147,16 +156,9 @@ $(() => {
     document.cookie = "settings="+JSON.stringify(settings)+" expires=Thu, 18 Dec 2024 12:00:00 UTC; path=/";
 
 
-
-
     // Create the schema
     function pushData(){
-            var open = window.indexedDB.open("DartsDatabase", 1);
-        open.onupgradeneeded = function () {
-            var db = open.result;
-            var gamesStore = db.createObjectStore("GamesStorage", {keyPath: "gameId"});
-            var playersStore = db.createObjectStore("PlayersStorage", {keyPath: "playerId"})
-        };
+        var open = window.indexedDB.open("DartsDatabase", 3);
 
         open.onsuccess = function () {
             // Start a new transaction
@@ -165,20 +167,24 @@ $(() => {
             var txPlayers = db.transaction("PlayersStorage", "readwrite");
             var gamesStore = txGames.objectStore("GamesStorage");
             var playersStore = txPlayers.objectStore("PlayersStorage");
+            var txActiveGames = db.transaction("ActiveGamesStorage", "readwrite");
+            var activeGamesStore = txActiveGames.objectStore("ActiveGamesStorage");
 
             // Add some data
             games.forEach(game => gamesStore.put(game));
             players.forEach(player => playersStore.put(player));
-
+            activeGames.forEach(activeGame => activeGamesStore.put(activeGame));
             // Close the db when the transaction is done
             txGames.oncomplete = function () {
-                    db.close();
+                db.close();
             };
             // Close the db when the transaction is done
             txPlayers.oncomplete = function () {
-                    db.close();
+                db.close();
+            };
+            txActiveGames.oncomplete = function () {
+                db.close();
             };
         }
     }
-
 });
