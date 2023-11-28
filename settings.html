@@ -22,20 +22,90 @@
         <div class="card">
             <div class="season_tabs">
                 <div class="season_tab">
-                    <input type="radio" id="tab-1" name="tab-group-1" checked>
+                    <input type="radio" id="tab-1" name="tab-group-1">
                     <label for="tab-1">General</label>
                     <div class="season_content">
-                        <label for="darkMode">
+                        <label for="darkMode" class="toggle">
                             <input type="checkbox" name="darkMode"/>
+                            <div class="checkbox-backdrop"></div>
                             <span>Dark Mode</span>
                         </label>
                     </div>
                 </div>
                 <div class="season_tab">
-                    <input type="radio" id="tab-2" name="tab-group-1">
+                    <input type="radio" id="tab-2" name="tab-group-1" checked>
                     <label for="tab-2">Default Mode</label>
                     <div class="season_content">
-                        
+                        <div class="game-settings">
+                            <fieldset>
+                                <label for="sets">
+                                    <span>Starting Points</span>
+                                    <input type="number" name="sets" value="501"/>
+                                </label>
+                                <fieldset>
+                                    <label for="bestOfSets" class="toggle" style="text-align: right;">
+                                        <input type="checkbox" name="bestOfSets"/>
+                                        <div class="checkbox-backdrop"></div>
+                                        <span>Best Of</span>
+                                    </label>
+                                    <label for="sets">
+                                        <span>Sets</span>
+                                        <input type="number" name="sets" value="3"/>
+                                    </label>
+                                </fieldset>
+                                <fieldset>
+                                    <label for="bestOfLegs" class="toggle" style="text-align: right;">
+                                        <input type="checkbox" name="bestOfLegs"/>
+                                        <div class="checkbox-backdrop"></div>
+                                        <span>Best Of</span>
+                                    </label>
+                                    <label for="legs">
+                                        <span>Legs</span>
+                                        <input type="number" name="legs" value="3"/>
+                                    </label>
+                                </fieldset>
+                            </fieldset>
+                            <fieldset>
+                                <label for="doubleIn" class="toggle" style="text-align: right;">
+                                    <input type="checkbox" name="doubleIn"/>
+                                    <div class="checkbox-backdrop"></div>
+                                    <span>Double-In</span>
+                                </label>
+                                <label for="doubleOut" class="toggle">
+                                    <input type="checkbox" name="doubleOut"/>
+                                    <div class="checkbox-backdrop"></div>
+                                    <span>Double Out</span>
+                                </label>
+                            </fieldset>
+                            <fieldset>
+                                <label for="gameAction">
+                                    <span>New Game Order</span>
+                                    <select name="gameAction" value="Select" invalid>
+                                        <option value="">Selected Order</option>
+                                        <option value="random">Random</option>
+                                        <option value="bull">Bulls</option>
+                                    </select>
+                                </label>
+                                <label for="legAction">
+                                    <span>New Leg Order</span>
+                                    <select name="legAction" value="Select" invalid>
+                                        <option value="">Do Nothing</option>
+                                        <option value="random">Random</option>
+                                        <option value="bull">Bulls</option>
+                                        <option value="rotate">Rotate</option>
+                                    </select>
+                                </label>
+                                <label for="setAction">
+                                    <span>New Set Order</span>
+                                    <select name="setAction" value="Select" invalid>
+                                        <option value="">Do Nothing</option>
+                                        <option value="random">Random</option>
+                                        <option value="bull">Bulls</option>
+                                        <option value="rotate">Rotate per Set</option>
+                                    </select>
+                                </label>
+                            </fieldset>
+                        </div>
                     </div>
                 </div>
             </div>
