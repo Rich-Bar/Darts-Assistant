@@ -107,8 +107,8 @@ window.createGameUI = () => {
                 if ($(e).is('[name="total"]')) {
                     turnScore = Math.min(180, Math.max(0, $(e).val()));
                 } else {
-                    throws.push({ score: Math.min(180, Math.max(0, throwScore + $(e).val())) });
-                    turnScore = Math.min(180, Math.max(0, throwScore + $(e).val()));
+                    throws.push({ score: Math.min(180, Math.max(0, turnScore + $(e).val())) });
+                    turnScore = Math.min(180, Math.max(0, turnScore + $(e).val()));
                 }
             });
             // Display Turn Score
