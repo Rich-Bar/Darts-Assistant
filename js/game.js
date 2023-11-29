@@ -6,14 +6,6 @@ window.calculateCoordinates = (distance, angle) => {
         y: 50 + 50 * (distance * Math.sin(((angle + 189) % 360) * Math.PI / 180))
     };
 }
-//Calculate Throw 
-window.calculateThrow = (e) => {
-    let totalPoints = 0;
-    $(e.target).parent().find("> input").each(function () {
-        totalPoints = parseInt($(this).val() || "0") + totalPoints;
-    });
-    $(e.target).parent().find("> button > input").val(totalPoints).attr('value', totalPoints).trigger("change")
-}
 //via board
 window.calculateScore = (x, y) => {
     let boardSize = $("section.overlays .dart-board .board img").innerWidth();
@@ -42,13 +34,16 @@ window.calculateScore = (x, y) => {
 
 window.popoverAction = (action, type, callback) => {
     if(action == "random"){
-        currentGame.players = currentGame.players.sort(()=>Math.random() - 0.5);
+        currentGame.players = shuffle(currentGame.players);
     }
-    callback();
+    setTimeout(()=>callback());
 };
 
+window.legRotation = 0;
+window.setRotation = 0;
 window.handleScoreInput = (e) => {
-    $(e.target).parents(".turn").find(".total").text($(e.target).parents(".turn").find("input").get().reduce((p, c) => p + parseInt($(c).val() || 0), 0));
+    let inputRow = $(e.target).parents('.turn').last();
+    inputRow.find(".total").text(inputRow.find("input").get().reduce((p, c) => p + parseInt($(c).val() || 0), 0));
     if ($("section.game .player.selected .turn input:visible").filter((i, e) => $(e).val() == "").length == 0) {
         let cid = $(e.target).parents('.player').attr('data-id'), found, next, last;
         currentGame.players.forEach((player) => {
@@ -63,16 +58,15 @@ window.handleScoreInput = (e) => {
             last = true;
             found = currentGame.players[0];
         }
-        let inputRow = $(e.target).parents('.turn').last();
         $('.player[data-id="' + cid + '"]').removeClass('selected');
         // Calculate Score
         let turnScore = 0, throws = [];
         inputRow.find('input').each((i, e) => {
             if ($(e).is('[name="total"]')) {
-                turnScore = Math.min(180, Math.max(0, $(e).val()));
+                turnScore = Math.min(180, Math.max(0, $(e).val()||0));
             } else {
-                throws.push({ score: Math.min(180, Math.max(0, turnScore + parseInt($(e).val()))) });
-                turnScore = Math.min(180, Math.max(0, turnScore + parseInt($(e).val())));
+                throws.push({ score: Math.min(180, Math.max(0, turnScore + parseInt($(e).val()||0))) });
+                turnScore = Math.min(180, Math.max(0, turnScore + parseInt($(e).val()||0)));
             }
         });
         // Display Turn Score
@@ -117,11 +111,13 @@ window.handleScoreInput = (e) => {
 };
 
 window.createGameUI = () => {
-    let i = 1;
+    let playerIndex = 0;
+    //Clear Scoreboard
+    $("section.game .scoreboard").html('');
     currentGame.players.forEach((player) => {
         player = players.filter((pl) => pl.id == player).pop();
         $('section.game .scoreboard').append(`
-            <div data-id="${player.id}" class="player ${i++ == 1 ? "selected" : ""}">
+            <div data-id="${player.id}" class="player${playerIndex++ == 0?" selected":""}">
                 <img width="200" height="200" src="https://picsum.photos/500">
                 <h3>${player.username}</h3>
                 <div class="simple-stat"></div>
@@ -152,10 +148,10 @@ window.createGameUI = () => {
                 </table>
             </div>`);
     });
-    $("section.game .player .turn input:visible").filter((i, e) => $(e).val() == "").first().focus();
+    $("section.game .scoreboard > .player .turn input:visible").filter((i, e) => $(e).val() == "").first().focus();
 
     // Player erntered Score
-    $("section.game .player .turn input").on('change enterPress', handleScoreInput);
+    setTimeout(()=>$("section.game .player .turn input").off('change enterPress').on('change enterPress', handleScoreInput));
 };
 
 window.finishedLeg = () => {
@@ -170,7 +166,7 @@ window.finishedLeg = () => {
         legs.push({
             type: "leg",
             turns: turns,
-            winner: turns.filter((t) => t.winner != undefined).pop()
+            winner: turns.filter((t) => t.finish != undefined).pop().player
         });
         let legWinCount = {}, setWinner;
         legs.forEach((leg) => {
@@ -209,20 +205,17 @@ window.finishedLeg = () => {
         legs.push({
             type: "leg",
             turns: turns,
-            winner: turns.filter((t) => t.winner != undefined).pop()
+            winner: turns.filter((t) => t.finish != undefined).pop()
         });
         currentGame.turns = [...sets, ...legs];
         if (currentGame.legAction) {
             action = currentGame.legAction; type = "leg";
         }
     }
-    //Clear Scoreboard
-    $("section.game .scoreboard").html('');
     popoverAction(action, type, createGameUI);
 };
 
 window.dbloaded = () => {
-    // Create UI
     window.currentGame = (window.activeGames || []).filter((ag) => ag.playing == true).pop();
     let action, type;
     if (currentGame.gameAction) {
@@ -232,47 +225,47 @@ window.dbloaded = () => {
     } else if (currentGame.legAction) {
         action = currentGame.legAction; type = "leg";
     }
-
+    // Start Game
     popoverAction(action, type, createGameUI);
-    // Board Overlay Logic
-    $("section.game .scoreboard .turn > input").on('change', calculateThrow);
-    $("section.overlays .dart-board .board img").click(function (e) {
-        e.preventDefault();
+}
+
+// Board Overlay Logic
+$("section.overlays .dart-board .board img").click(function (e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    //Check if already thrown
+    if ($("section.overlays .dart-board .board > span").length == 3) {
+        $("section.overlays .dart-board .board > span").remove();
+        return;
+    }
+    let boardSize = $("section.overlays .dart-board .board img").innerWidth();
+
+    let scored = calculateScore(e.offsetX, e.offsetY);
+    if (scored == null) return;
+    //Place Position Marker
+    var halfCrosshairSize = Math.floor(boardSize / 50);
+    let crossHair = $('section.overlays .dart-board .board').append('<span class="ui-draggable ui-draggable-handle" style="top: ' + (-halfCrosshairSize + e.offsetY) + 'px;left: ' + (-halfCrosshairSize + e.offsetX) + 'px;"></span>');
+    let crossHairClick = function (e) {
         e.stopImmediatePropagation();
         //Check if already thrown
         if ($("section.overlays .dart-board .board > span").length == 3) {
             $("section.overlays .dart-board .board > span").remove();
             return;
         }
-        let boardSize = $("section.overlays .dart-board .board img").innerWidth();
+        let boardX = e.offsetX + parseInt($(e.target).css('left').replace('px', ''));
+        let boardY = e.offsetY + parseInt($(e.target).css('top').replace('px', ''));
+        if (Number.isNaN(boardY) || Number.isNaN(boardX)) return;
 
-        let scored = calculateScore(e.offsetX, e.offsetY);
+        let scored = calculateScore(boardX, boardY);
         if (scored == null) return;
-        //Place Position Marker
-        var halfCrosshairSize = Math.floor(boardSize / 50);
-        let crossHair = $('section.overlays .dart-board .board').append('<span class="ui-draggable ui-draggable-handle" style="top: ' + (-halfCrosshairSize + e.offsetY) + 'px;left: ' + (-halfCrosshairSize + e.offsetX) + 'px;"></span>');
-        let crossHairClick = function (e) {
-            e.stopImmediatePropagation();
-            //Check if already thrown
-            if ($("section.overlays .dart-board .board > span").length == 3) {
-                $("section.overlays .dart-board .board > span").remove();
-                return;
+        let crossHairr = $('section.overlays .dart-board .board').append('<span class="ui-draggable ui-draggable-handle" style="top: ' + (-halfCrosshairSize + boardY) + 'px;left: ' + (-halfCrosshairSize + boardX) + 'px;"></span>');
+        crossHairr.on("click", crossHairClick);
+        $('section.overlays .dart-board .board > span').draggable({
+            stop: function (e, ui) {
+                let scored = calculateScore(ui.position.left + halfCrosshairSize, ui.position.top + halfCrosshairSize);
+                if (scored == null) return;
             }
-            let boardX = e.offsetX + parseInt($(e.target).css('left').replace('px', ''));
-            let boardY = e.offsetY + parseInt($(e.target).css('top').replace('px', ''));
-            if (Number.isNaN(boardY) || Number.isNaN(boardX)) return;
-
-            let scored = calculateScore(boardX, boardY);
-            if (scored == null) return;
-            let crossHairr = $('section.overlays .dart-board .board').append('<span class="ui-draggable ui-draggable-handle" style="top: ' + (-halfCrosshairSize + boardY) + 'px;left: ' + (-halfCrosshairSize + boardX) + 'px;"></span>');
-            crossHairr.on("click", crossHairClick);
-            $('section.overlays .dart-board .board > span').draggable({
-                stop: function (e, ui) {
-                    let scored = calculateScore(ui.position.left + halfCrosshairSize, ui.position.top + halfCrosshairSize);
-                    if (scored == null) return;
-                }
-            });
-        };
-        crossHair.click(crossHairClick);
-    });
-}
+        });
+    };
+    crossHair.click(crossHairClick);
+});

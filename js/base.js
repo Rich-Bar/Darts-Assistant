@@ -13,6 +13,9 @@ function generateUUID() { // Public Domain/MIT
         return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
 }
+window.shuffle = (array) => { 
+    return array.sort(() => Math.random() - 0.5); 
+}; 
 
 window.saveDB = (callback)=>{// set settings as cookie
     document.cookie = "settings="+JSON.stringify((window.settings||{}))+" expires=Thu, 18 Dec 2024 12:00:00 UTC; path=/";
