@@ -31,7 +31,7 @@ window.calculateScore = (x, y) => {
         scored = 25;                                // Center Green
     } else if (distance > 0.433 && distance < 0.473) {
         scored = fields[Math.floor(angle / 18)] * 3;  // Tripples
-    } else if (distance > 0.709 && distance < 0.753) {
+    } else if (distance > 0.709 && distance <= 0.753) {
         scored = fields[Math.floor(angle / 18)] * 2;  // Doubles
     } else if (distance > 0.753) {       // Out
     } else {
@@ -41,7 +41,79 @@ window.calculateScore = (x, y) => {
 }
 
 window.popoverAction = (action, type, callback) => {
+    if(action == "random"){
+        currentGame.players = currentGame.players.sort(()=>Math.random() - 0.5);
+    }
     callback();
+};
+
+window.handleScoreInput = (e) => {
+    $(e.target).parents(".turn").find(".total").text($(e.target).parents(".turn").find("input").get().reduce((p, c) => p + parseInt($(c).val() || 0), 0));
+    if ($("section.game .player.selected .turn input:visible").filter((i, e) => $(e).val() == "").length == 0) {
+        let cid = $(e.target).parents('.player').attr('data-id'), found, next, last;
+        currentGame.players.forEach((player) => {
+            if (next == true) {
+                found = player;
+                next = false;
+            } else if (player == cid) {
+                next = true;
+            }
+        });
+        if (!found) {
+            last = true;
+            found = currentGame.players[0];
+        }
+        let inputRow = $(e.target).parents('.turn').last();
+        $('.player[data-id="' + cid + '"]').removeClass('selected');
+        // Calculate Score
+        let turnScore = 0, throws = [];
+        inputRow.find('input').each((i, e) => {
+            if ($(e).is('[name="total"]')) {
+                turnScore = Math.min(180, Math.max(0, $(e).val()));
+            } else {
+                throws.push({ score: Math.min(180, Math.max(0, turnScore + parseInt($(e).val()))) });
+                turnScore = Math.min(180, Math.max(0, turnScore + parseInt($(e).val())));
+            }
+        });
+        // Display Turn Score
+        $(e.target).parents('.turn').find("span.total").text(turnScore);
+        inputRow.find('input').remove();
+        let currentRemaining = parseInt(inputRow.find('td:first-child').text()),
+            over = Math.min(0, currentRemaining - turnScore),
+            finish = currentRemaining == turnScore,
+            player = window.players.filter((pl) => pl.id == cid).pop();
+        // Append new Row for next Turn
+        inputRow.after(`
+            <tr class="turn${finish ? "finish" : ""}">
+                <td>${over < 0 ? currentRemaining : currentRemaining - turnScore}</td>
+                <td>
+                ${player.sem == "total" ? `<input class="total" type="number" name="total" maxlength="3" min="0" max="180" required/>` :
+                `<input class="throw" type="number" name="throw-1" maxlength="2" min="0" max="60" required/>
+                <input class="throw" type="number" name="throw-2" maxlength="2" min="0" max="60" required/>
+                <input class="throw" type="number" name="throw-3" maxlength="2" min="0" max="60" required/>`}
+                <span class="total"></span>
+                </td>
+            </tr>`);
+        // Save Turn
+        let turn = {
+            player: player.id,
+            score: turnScore,
+            over: over,
+            finish: finish,
+            throws: throws,
+            timestamp: Date.now()
+        };
+        currentGame.turns.push(turn);
+        if (finish) finishedLeg();
+
+        // Add Listeners to new InputRow
+        if(last) $("section.game .player .turn input").off().on('change enterPress', handleScoreInput);
+
+        // Show next Player
+        $('.player[data-id="' + found + '"]').addClass('selected')[0].scrollTo();
+    }
+    //Focus next Input
+    $("section.game .player .turn input:visible").filter((i, e) => $(e).val() == "").first().focus();
 };
 
 window.createGameUI = () => {
@@ -70,7 +142,7 @@ window.createGameUI = () => {
                             <td>${currentGame.startingPoints}</td>
                             <td>
                             ${player.sem == "total" ? `<input class="total" type="number" name="total" maxlength="3" min="0" max="180" required/>` :
-                `<input class="throw" type="number" name="throw-1" maxlength="2" min="0" max="60" required/>
+                `           <input class="throw" type="number" name="throw-1" maxlength="2" min="0" max="60" required/>
                             <input class="throw" type="number" name="throw-2" maxlength="2" min="0" max="60" required/>
                             <input class="throw" type="number" name="throw-3" maxlength="2" min="0" max="60" required/>`}
                             <span class="total"></span>
@@ -83,72 +155,7 @@ window.createGameUI = () => {
     $("section.game .player .turn input:visible").filter((i, e) => $(e).val() == "").first().focus();
 
     // Player erntered Score
-    $("section.game .player .turn input").on('change enterPress', (e) => {
-        $("section.game .player.selected .turn .total").text($("section.game .player.selected .turn input").get().reduce((p, c) => p + parseInt($(c).val() || 0), 0));
-        if ($("section.game .player.selected .turn input:visible").filter((i, e) => $(e).val() == "").length == 0) {
-            let cid = $(e.target).parents('.player').attr('data-id'), found, next, last;
-            currentGame.players.forEach((player) => {
-                if (next == true) {
-                    found = player;
-                    next = false;
-                } else if (player == cid) {
-                    next = true;
-                }
-            });
-            if (!found) {
-                last = true;
-                found = currentGame.players[0];
-            }
-            let inputRow = $('.player.selected .turn').last();
-            $('.player[data-id="' + cid + '"]').removeClass('selected');
-            // Calculate Score
-            let turnScore = 0, throws = [];
-            inputRow.find('input').each((i, e) => {
-                if ($(e).is('[name="total"]')) {
-                    turnScore = Math.min(180, Math.max(0, $(e).val()));
-                } else {
-                    throws.push({ score: Math.min(180, Math.max(0, turnScore + $(e).val())) });
-                    turnScore = Math.min(180, Math.max(0, turnScore + $(e).val()));
-                }
-            });
-            // Display Turn Score
-            $("section.game .player.selected .turn .total").text(turnScore);
-            inputRow.find('input').remove();
-            let currentRemaining = parseInt(inputRow.find('td:first-child').text()),
-                over = Math.min(0, currentRemaining - turnScore),
-                finish = currentRemaining == turnScore,
-                player = window.players.filter((pl) => pl.id == cid);
-            // Append new Row for next Turn
-            inputRow.after(`
-                <tr class="turn${finish ? "finish" : ""}">
-                    <td>${over < 0 ? currentRemaining : currentRemaining - turnScore}</td>
-                    <td>
-                    ${player.sem == "total" ? `<input class="total" type="number" name="total" maxlength="3" min="0" max="180" required/>` :
-                    `<input class="throw" type="number" name="throw-1" maxlength="2" min="0" max="60" required/>
-                    <input class="throw" type="number" name="throw-2" maxlength="2" min="0" max="60" required/>
-                    <input class="throw" type="number" name="throw-3" maxlength="2" min="0" max="60" required/>`}
-                    <span class="total"></span>
-                    </td>
-                </tr>`);
-            // Save Turn
-            let turn = {
-                player: player.id,
-                score: turnScore,
-                over: over,
-                finish: finish,
-                throws: throws,
-                timestamp: Date.now()
-            };
-            // ToDo: Add Logic for 'lastChance'
-            currentGame.turns.push(turn);
-            if (finish) finishedLeg();
-
-            // Show next Player
-            $('.player[data-id="' + found + '"]').addClass('selected')[0].scrollTo();
-        }
-        //Focus next Input
-        $("section.game .player .turn input:visible").filter((i, e) => $(e).val() == "").first().focus();
-    });
+    $("section.game .player .turn input").on('change enterPress', handleScoreInput);
 };
 
 window.finishedLeg = () => {
@@ -257,7 +264,6 @@ window.dbloaded = () => {
 
             let scored = calculateScore(boardX, boardY);
             if (scored == null) return;
-            console.log(scored);
             let crossHairr = $('section.overlays .dart-board .board').append('<span class="ui-draggable ui-draggable-handle" style="top: ' + (-halfCrosshairSize + boardY) + 'px;left: ' + (-halfCrosshairSize + boardX) + 'px;"></span>');
             crossHairr.on("click", crossHairClick);
             $('section.overlays .dart-board .board > span').draggable({
