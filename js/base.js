@@ -154,13 +154,17 @@ $(() => {
                 </div>
             </div>`);
         });
-        (window.activeGames||[]).forEach((activeGame)=>{
-
-        });
+        if((window.activeGames||[]).length){
+            $('.main-menu a.disabled').removeClass('disabled');
+            (window.activeGames||[]).forEach((ag)=>{
+                $('.game-selector').append(`<diV>${new Date(ag.started||0).toLocaleString()}</div>`);
+            });
+        }
         // Setup Listeners
         $('button.start-game').on("click touchdown", ()=>{
             window.currentGame = {
                 id: generateUUID(),
+                started: Date.now(),
                 players: $('.player-selector > div.active').map((i,el) => $(el).attr('data-id')).get(),
                 startingPoints: $('.game-settings input[name="startingPoints"]').val(),
                 legs: $('.game-settings input[name="legs"]').val(),
