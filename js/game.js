@@ -95,36 +95,36 @@ window.createGameUI = () => {
                     next = true;
                 }
             });
-            if (!found){
+            if (!found) {
                 last = true;
                 found = currentGame.players[0];
             }
             let inputRow = $('.player.selected .turn').last();
             $('.player[data-id="' + cid + '"]').removeClass('selected');
             // Calculate Score
-            let turnScore = 0, throws=[];
+            let turnScore = 0, throws = [];
             inputRow.find('input').each((i, e) => {
                 if ($(e).is('[name="total"]')) {
                     turnScore = Math.min(180, Math.max(0, $(e).val()));
                 } else {
-                    throws.push({score:Math.min(180, Math.max(0, throwScore + $(e).val()))});
+                    throws.push({ score: Math.min(180, Math.max(0, throwScore + $(e).val())) });
                     turnScore = Math.min(180, Math.max(0, throwScore + $(e).val()));
                 }
             });
             // Display Turn Score
             $("section.game .player.selected .turn .total").text(turnScore);
             inputRow.find('input').remove();
-            let currentRemaining = parseInt(inputRow.find('td:first-child').text()), 
-                over = Math.min(0, currentRemaining - turnScore), 
+            let currentRemaining = parseInt(inputRow.find('td:first-child').text()),
+                over = Math.min(0, currentRemaining - turnScore),
                 finish = currentRemaining == turnScore,
-                player = window.players.filter((pl)=>pl.id == cid);
+                player = window.players.filter((pl) => pl.id == cid);
             // Append new Row for next Turn
             inputRow.after(`
-                <tr class="turn${finish?"finish":""}">
-                    <td>${over < 0? currentRemaining : currentRemaining - turnScore}</td>
+                <tr class="turn${finish ? "finish" : ""}">
+                    <td>${over < 0 ? currentRemaining : currentRemaining - turnScore}</td>
                     <td>
                     ${player.sem == "total" ? `<input class="total" type="number" name="total" maxlength="3" min="0" max="180" required/>` :
-                `<input class="throw" type="number" name="throw-1" maxlength="2" min="0" max="60" required/>
+                    `<input class="throw" type="number" name="throw-1" maxlength="2" min="0" max="60" required/>
                     <input class="throw" type="number" name="throw-2" maxlength="2" min="0" max="60" required/>
                     <input class="throw" type="number" name="throw-3" maxlength="2" min="0" max="60" required/>`}
                     <span class="total"></span>
@@ -135,12 +135,13 @@ window.createGameUI = () => {
                 player: player.id,
                 score: turnScore,
                 over: over,
-                finish: finish, 
-                throws: throws
+                finish: finish,
+                throws: throws,
+                timestamp: Date.now()
             };
             // ToDo: Add Logic for 'lastChance'
             currentGame.turns.push(turn);
-            if(finish) finishedLeg();
+            if (finish) finishedLeg();
 
             // Show next Player
             $('.player[data-id="' + found + '"]').addClass('selected')[0].scrollTo();
@@ -151,19 +152,62 @@ window.createGameUI = () => {
 };
 
 window.finishedLeg = () => {
-    if(currentGame.turns.length == 0 || currentGame.turns[0].turns == undefined){
-        //First Leg
-    }else if(currentGame.turns[0].turns[0].turns == undefined){
-        //Leg
-    }else{
-        //Set
-    }
-    
+    let turns = currentGame.turns.filter((t) => t.type == undefined),
+        legs = currentGame.turns.filter((t) => t.type == "leg"),
+        sets = currentGame.turns.filter((t) => t.type == "set");
+
     let action, type;
-    if (currentGame.setAction) {
-        action = currentGame.setAction; type = "set";
-    } else if (currentGame.legAction) {
-        action = currentGame.legAction; type = "leg";
+    if ((currentGame.bestOfLegs == true && (legs.length + 1) > currentGame.legs / 2) ||
+        (currentGame.bestOfLegs != true && (legs.length + 1) >= currentGame.legs)) {
+        // Won Set
+        legs.push({
+            type: "leg",
+            turns: turns,
+            winner: turns.filter((t) => t.winner != undefined).pop()
+        });
+        let legWinCount = {}, setWinner;
+        legs.forEach((leg) => {
+            legWinCount[leg.winner] = (legWinCount[leg.winner] || 0) + 1;
+        });
+        Object.entries(legWinCount).forEach((key, value) => {
+            if ((currentGame.bestOfLegs == true && value > currentGame.legs / 2) ||
+                (currentGame.bestOfLegs != true && value >= currentGame.legs)) {
+                setWinner = key;
+            }
+        });
+        sets.push({
+            type: "set",
+            turns: legs,
+            winner: setWinner
+        });
+        // Check if Game-Winner exists
+        let setWinCount = {};
+        sets.forEach((set) => {
+            setWinCount[set.winner] = (setWinCount[set.winner] || 0) + 1;
+        });
+        Object.entries(setWinCount).forEach((key, value) => {
+            if ((currentGame.bestOfSets == true && value > currentGame.sets / 2) ||
+                (currentGame.bestOfSets != true && value >= currentGame.sets)) {
+                currentGame.winner = key;
+            }
+        });
+        currentGame.turns = sets;
+        if (currentGame.setAction) {
+            action = currentGame.setAction; type = "set";
+        } else if (currentGame.legAction) {
+            action = currentGame.legAction; type = "leg";
+        }
+    } else {
+        // Just won a Leg
+        legs.push({
+            type: "leg",
+            turns: turns,
+            winner: turns.filter((t) => t.winner != undefined).pop()
+        });
+        currentGame.turns = [...sets, ...legs];
+        if (currentGame.legAction) {
+            action = currentGame.legAction; type = "leg";
+        }
     }
     //Clear Scoreboard
     $("section.game .scoreboard").html('');
