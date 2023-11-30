@@ -63,7 +63,7 @@ window.handleScoreInput = (e) => {
     // Calculate Score
     let currentRemaining = parseInt(inputRow.find('td:first-child').text()), turnScore = 0, throws = [], isIn = false;
     inputRow.find('input').each((i, e) => {
-        if ($(e).is('[name="total"]')) {
+        if ($(e.target).is('[name="total"]')) {
             if(inputValue < 0 || inputValue > 180 || [179, 178, 176, 175, 173, 172, 169, 166, 163].includes(inputValue)) return;
             turnScore = inputValue;
         } else {
