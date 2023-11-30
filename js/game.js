@@ -32,28 +32,87 @@ window.calculateScore = (x, y) => {
     return { points: scored, angle: angle, distance: distance, x: x, y: y };
 }
 
-window.legRotation = 0;
-window.setRotation = 0;
 window.popoverAction = (action, callback) => {
     if(action == "bulls" || action == "board"){
-        $('.overlays, .overlays > .dartboard').addClass('visible');
+        $('.overlays, .overlays > .dart-board').addClass('visible');
     }else if(action == "win"){
         $('.overlays, .overlays > .win').addClass('visible');
-        // ToDo add Winning animation = D
+        $('.overlays > .win > h3').text('Winner');
+        $('.overlays > .win').animate({
+            opacity: 0.25,
+            left: "+=50",
+            height: "toggle"
+          }, 2500, function() {
+            $('.overlays, .overlays > .win').removeClass('visible');
+          });
     }else if(action == "random"){
         currentGame.players = shuffle(currentGame.players);
     }else if(action == "rotate"){
-        currentGame.players = arrayRotate(currentGame.players, ++legRotation);
+        currentGame.players = arrayRotate(currentGame.players, currentGame.legRotation++);
     }else if(action == "rotateSet"){
         legRotation = 0;
-        currentGame.players = shuffle(currentGame.startingOrder, ++setRotation);
+        currentGame.players = shuffle(currentGame.startingOrder, ++currentGame.setRotation);
     }
-    setTimeout(()=>callback());
+    if(typeof(callback)=="function")setTimeout(()=>callback());
 };
 
 window.handleScoreInput = (e) => {
     let inputRow = $(e.target).parents('.turn').last();
-    inputRow.find(".total").text(inputRow.find("input").get().reduce((p, c) => p + parseInt($(c).val() || 0), 0));
+    let inputValue = parseInt($(e).val()||-1);
+
+    // Calculate Score
+    let currentRemaining = parseInt(inputRow.find('td:first-child').text()), turnScore = 0, throws = [], isIn = false;
+    inputRow.find('input').each((i, e) => {
+        if ($(e).is('[name="total"]')) {
+            if(inputValue < 0 || inputValue > 180 || [179, 178, 176, 175, 173, 172, 169, 166, 163].includes(inputValue)) return;
+            turnScore = inputValue;
+        } else {
+            //Impossible Numbers
+            if(inputValue < 0 || inputValue > 60 || [59, 58, 56, 55, 53, 52, 49, 47, 46, 44, 43, 41, 37, 35, 31, 29, 23].includes(inputValue)) return;
+            if(currentGame.doubleIn && currentGame.startingPoints == currentRemaining && isIn == false){
+                if(inputValue%2==0){
+                    throws.push({ score: inputValue });
+                    turnScore = turnScore + inputValue;
+                }
+            }else{
+                throws.push({ score: inputValue });
+                turnScore = turnScore + inputValue;
+            }
+        }
+    });
+    let over = Math.min(0, currentRemaining - turnScore),
+        finish = currentRemaining == turnScore,
+        player = window.players.filter((pl) => pl.id == cid).pop();
+    
+        // Display Turn Total
+    inputRow.find(".total").text(turnScore);
+    if (finish){
+        let saveTurn = ()=>{
+            // Save Turn
+            let turn = {
+                player: player.id,
+                toClear: currentRemaining,
+                score: turnScore,
+                over: over,
+                finish: finish,
+                throws: throws,
+                timestamp: Date.now()
+            };
+            currentGame.turns.push(turn);
+            finishedLeg();
+        }
+        //Check if finished
+        if(currentGame.doubleOut){
+            if(parseInt($(e.target).val())%2==0){
+                saveTurn();
+                return;
+            }
+        }else{
+            saveTurn();
+            return;
+        }
+    }
+    // Turn Complete
     if ($("section.game .player.selected .turn input:visible").filter((i, e) => $(e).val() == "").length == 0) {
         let cid = $(e.target).parents('.player').attr('data-id'), found, next, last;
         currentGame.players.forEach((player) => {
@@ -69,23 +128,7 @@ window.handleScoreInput = (e) => {
             found = currentGame.players[0];
         }
         $('.player[data-id="' + cid + '"]').removeClass('selected');
-        // Calculate Score
-        let turnScore = 0, throws = [];
-        inputRow.find('input').each((i, e) => {
-            if ($(e).is('[name="total"]')) {
-                turnScore = Math.min(180, Math.max(0, $(e).val()||0));
-            } else {
-                throws.push({ score: Math.min(180, Math.max(0, turnScore + parseInt($(e).val()||0))) });
-                turnScore = Math.min(180, Math.max(0, turnScore + parseInt($(e).val()||0)));
-            }
-        });
-        // Display Turn Score
-        $(e.target).parents('.turn').find("span.total").text(turnScore);
         inputRow.find('input').remove();
-        let currentRemaining = parseInt(inputRow.find('td:first-child').text()),
-            over = Math.min(0, currentRemaining - turnScore),
-            finish = currentRemaining == turnScore,
-            player = window.players.filter((pl) => pl.id == cid).pop();
         // Append new Row for next Turn
         inputRow.after(`
             <tr class="turn${finish ? "finish" : ""}">
@@ -98,20 +141,13 @@ window.handleScoreInput = (e) => {
                 <span class="total"></span>
                 </td>
             </tr>`);
-        // Save Turn
-        let turn = {
-            player: player.id,
-            score: turnScore,
-            over: over,
-            finish: finish,
-            throws: throws,
-            timestamp: Date.now()
-        };
-        currentGame.turns.push(turn);
-        if (finish) finishedLeg();
+        updateStatistics();
 
         // Add Listeners to new InputRow
-        if(last) $("section.game .player .turn input").off().on('change enterPress', handleScoreInput);
+        if(last) $("section.game .player .turn input").on('change enterPress', handleScoreInput);
+        if(last) $("section.game .player .turn input").on('keyup', (e)=>{
+            if(e.keyCode == 32 || e.keyCode == 66)popoverAction('board');
+        });
 
         // Show next Player
         $('.player[data-id="' + found + '"]').addClass('selected')[0].scrollTo();
@@ -125,6 +161,7 @@ window.createGameUI = () => {
     //Clear Scoreboard
     $("section.game .scoreboard").html('');
     currentGame.players.forEach((player) => {
+        console.log(currentGame, player);
         player = players.filter((pl) => pl.id == player).pop();
         $('section.game .scoreboard').append(`
             <div data-id="${player.id}" class="player${playerIndex++ == 0?" selected":""}">
@@ -158,10 +195,16 @@ window.createGameUI = () => {
                 </table>
             </div>`);
     });
+    updateStatistics();
     $("section.game .scoreboard > .player .turn input:visible").filter((i, e) => $(e).val() == "").first().focus();
 
     // Player erntered Score
-    setTimeout(()=>$("section.game .player .turn input").off('change enterPress').on('change enterPress', handleScoreInput));
+    setTimeout(()=>{
+        $("section.game .player .turn input").on('change enterPress', handleScoreInput);
+        $("section.game .player .turn input").on('keyup', (e)=>{
+            if(e.keyCode == 32 || e.keyCode == 66)popoverAction('board');
+        });
+    });
 };
 
 window.finishedLeg = () => {
@@ -191,7 +234,6 @@ window.finishedLeg = () => {
             setWinner = e[0];
         }
     });
-    console.log(legWinCount, setWinner);
     if(setWinner){
         sets.push({
             type: "set",
@@ -223,6 +265,13 @@ window.finishedLeg = () => {
 
 window.dbloaded = () => {
     window.currentGame = (window.activeGames || []).filter((ag) => ag.playing == true).pop();
+    if(!currentGame && (window.activeGames || []).length ){
+        window.activeGames[0].playing = true;
+        window.currentGame = window.activeGames[0];
+        currentGame.legRotation = currentGame.legRotation||0;
+        currentGame.setRotation = currentGame.setRotation||0;
+        
+    }
     let action;
     if (currentGame.gameAction) {
         action = currentGame.gameAction;
@@ -251,16 +300,15 @@ $("section.overlays .dart-board .board img").click(function (e) {
 
     let scored = calculateScore(e.offsetX, e.offsetY);
     if (scored == null) return;
+    //Check if already thrown
+    if ($("section.overlays .dart-board .board > span").length == 3) {
+        return;
+    }
     //Place Position Marker
     var halfCrosshairSize = Math.floor(boardSize / 50);
     let crossHair = $('section.overlays .dart-board .board').append('<span class="ui-draggable ui-draggable-handle" style="top: ' + (-halfCrosshairSize + e.offsetY) + 'px;left: ' + (-halfCrosshairSize + e.offsetX) + 'px;"></span>');
     let crossHairClick = function (e) {
         e.stopImmediatePropagation();
-        //Check if already thrown
-        if ($("section.overlays .dart-board .board > span").length == 3) {
-            $("section.overlays .dart-board .board > span").remove();
-            return;
-        }
         let boardX = e.offsetX + parseInt($(e.target).css('left').replace('px', ''));
         let boardY = e.offsetY + parseInt($(e.target).css('top').replace('px', ''));
         if (Number.isNaN(boardY) || Number.isNaN(boardX)) return;
@@ -281,3 +329,22 @@ $("section.overlays .dart-board .board img").click(function (e) {
 $("section.overlays .backdrop").on('click touchdown', ()=>{
     $('section.overlays, section.overlays > .visible').removeClass('visible');
 });
+
+window.updateStatistics = ()=>{
+    currentGame.players.forEach((pid)=>{
+        let player = players.filter((p)=>p.id == pid).pop();
+        let average, doubleInChances = {tries:0,hits:0}, doubleOutChances = {tries:0,hits:0}, legWins, setWins, legAverages = [], setAverages = [];
+        let calculateStats = (turn)=>{
+            if(turn.type == undefined){
+                if(turn.throws.length){
+
+                }
+            }else if(turn.type == "leg"){
+
+            }else if(turn.type == "set"){
+
+            }
+        }
+        currentGame.turns.forEach(calculateStats);
+    });
+}

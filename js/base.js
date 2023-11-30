@@ -52,17 +52,17 @@ window.saveDB = (callback)=>{// set settings as cookie
         // Close the db when the transaction is done
         txActiveGames.oncomplete = function () {
             db.close();
-            if(--waitFor == 0 && callback) callback();
+            if(--waitFor == 0 && typeof(callback)=="function") callback();
         };
         // Close the db when the transaction is done
         txGames.oncomplete = function () {
                 db.close();
-                if(--waitFor == 0 && callback) callback();
+                if(--waitFor == 0 && typeof(callback)=="function") callback();
         };
         // Close the db when the transaction is done
         txPlayers.oncomplete = function () {
                 db.close();
-                if(--waitFor == 0 && callback) callback();
+                if(--waitFor == 0 && typeof(callback)=="function") callback();
         };
     }
 };
@@ -95,19 +95,19 @@ $(() => {
             var getPlayers = playersStore.getAll();
             getPlayers.onsuccess = function () {
                 window.players = getPlayers.result;
-                if (++done == 3) callback();
+                if (++done == 3 && typeof(callback)=="function") callback();
             };
             
             var getGames = gamesStore.getAll()
             getGames.onsuccess = function () {
                 window.games = getGames.result;
-                if (++done == 3) callback();
+                if (++done == 3 && typeof(callback)=="function") callback();
             };
             
             var getActiveGames = activeGamesStore.getAll()
             getActiveGames.onsuccess = function () {
                 window.activeGames = getActiveGames.result;
-                if (++done == 3) callback();
+                if (++done == 3 && typeof(callback)=="function") callback();
             };
             
             // Close the db when the transaction is done
@@ -165,7 +165,7 @@ $(() => {
         if((window.activeGames||[]).length){
             $('.main-menu a.disabled').removeClass('disabled');
             (window.activeGames||[]).forEach((ag)=>{
-                $('.game-selector').append(`<diV>${new Date(ag.started||0).toLocaleString()}</div>`);
+                $('.game-selector').append(`<div style="font-size:1rem;padding:0.25rem 1.25rem;" data-id="${ag.id}">${window.players.filter((p)=>ag.players.includes(p.id)).map((p)=>p.username).join(', ')}<br><span style="font-size:0.85rem;">${new Date(ag.started||0).toLocaleString()}</span></div>`);
             });
         }
         // Setup Listeners
@@ -193,18 +193,28 @@ $(() => {
             saveDB(()=>{window.location.href = "game.html";});
         });
         $('button.continue-game').on("click touchdown", ()=>{
-
+            let gameOrder = [];
+            $('.game-selector .index').each((i,e)=>{
+                gameOrder[parseInt($(e).text()-1)] = window.activeGames.filter((ag)=>ag.id==$(e).parent().attr("data-id")).pop();
+            });
+            $('.game-selector > div').not($('.game-selector .index').parent()).each((i,e)=>{
+                gameOrder[gameOrder.length] = window.activeGames.filter((ag)=>ag.id==$(e).attr("data-id")).pop();
+            })
+            gameOrder[0].playing = true;
+            window.activeGames = gameOrder; 
+            (window.activeGames||[]).forEach((ag)=> ag.playing = false);
+            saveDB(()=>{window.location.href = "game.html";});
         });
-        $('section.new-game .season_content .player-selector > div').on('click touchdown', (e)=>{
+        $('section.new-game .season_content .player-selector > div, section.new-game .season_content .game-selector > div').on('click touchdown', (e)=>{
             let playerDiv = $(e.currentTarget);
             if(playerDiv.hasClass('active')){
                 let ix = playerDiv.find('.index'), di = parseInt(ix.text());
-                $("section.new-game .season_content .player-selector > div .index").each((i,e)=>{
+                playerDiv.parents(".player-selector,.game-selector").find("> div .index").each((i,e)=>{
                     if(parseInt($(e).text()) > di) $(e).text(parseInt($(e).text())-1);
                 });
                 playerDiv.removeClass('active').find('.index').remove();
             }else{
-                playerDiv.addClass('active').append('<span class="index">'+($("section.new-game .season_content .player-selector > div .index").length+1)+"</span>");
+                playerDiv.addClass('active').append('<span class="index">'+(playerDiv.parents(".player-selector,.game-selector").find("> div .index").length+1)+"</span>");
             }
         });
         $('section.players .user-form').on('submit', (e) => {

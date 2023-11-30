@@ -550,6 +550,7 @@ form.user-form label input {
 }
 
 /* New Game page*/
+section.new-game .game-selector,
 section.new-game .player-selector {
     display: flex;
     flex-wrap: wrap;
@@ -558,6 +559,7 @@ section.new-game .player-selector {
     gap: 0.5em;
 }
 
+section.new-game .game-selector>div,
 section.new-game .player-selector>div {
     border-radius: 2em;
     position: relative;
@@ -567,12 +569,14 @@ section.new-game .player-selector>div {
     transition: all 200ms linear;
 }
 
+section.new-game .game-selector>div:hover,
 section.new-game .player-selector>div:hover {
     border: 1px solid #000;
     background: #000;
     color: #fff;
 }
 
+section.new-game .game-selector>div.active,
 section.new-game .player-selector>div.active {
     border: 1px solid #000;
     color: #fff;
@@ -580,6 +584,7 @@ section.new-game .player-selector>div.active {
     background: #111;
 }
 
+section.new-game .game-selector>div .index,
 section.new-game .player-selector>div .index {
     border: 1px solid #666;
     background: #fff;
