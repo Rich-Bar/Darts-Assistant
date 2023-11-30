@@ -16,7 +16,12 @@ function generateUUID() { // Public Domain/MIT
 window.shuffle = (array) => { 
     return array.sort(() => Math.random() - 0.5); 
 }; 
-
+window.arrayRotate = (arr, count) => {
+    const len = arr.length
+    arr.push(...arr.splice(0, (-count % len + len) % len))
+    return arr
+};
+  
 window.saveDB = (callback)=>{// set settings as cookie
     document.cookie = "settings="+JSON.stringify((window.settings||{}))+" expires=Thu, 18 Dec 2024 12:00:00 UTC; path=/";
     // Create the schema
@@ -165,6 +170,7 @@ $(() => {
         }
         // Setup Listeners
         $('button.start-game').on("click touchdown", ()=>{
+            if($('.player-selector > div.active').length == 0) return;
             window.currentGame = {
                 id: generateUUID(),
                 started: Date.now(),

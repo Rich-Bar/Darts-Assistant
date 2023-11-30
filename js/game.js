@@ -32,9 +32,19 @@ window.calculateScore = (x, y) => {
     return { points: scored, angle: angle, distance: distance, x: x, y: y };
 }
 
-window.popoverAction = (action, type, callback) => {
-    if(action == "random"){
+window.popoverAction = (action, callback) => {
+    if(action == "bulls" || action == "board"){
+        $('.overlays, .overlays > .dartboard').addClass('visible');
+    }else if(action == "win"){
+        $('.overlays, .overlays > .win').addClass('visible');
+        // ToDo add Winning animation = D
+    }else if(action == "random"){
         currentGame.players = shuffle(currentGame.players);
+    }else if(action == "rotate"){
+        currentGame.players = arrayRotate(currentGame.players, ++legRotation);
+    }else if(action == "rotateSet"){
+        legRotation = 0;
+        currentGame.players = shuffle(currentGame.startingOrder, ++setRotation);
     }
     setTimeout(()=>callback());
 };
@@ -166,6 +176,7 @@ window.finishedLeg = () => {
         legs.push({
             type: "leg",
             turns: turns,
+            players: currentGame.players,
             winner: turns.filter((t) => t.finish != undefined).pop().player
         });
         let legWinCount = {}, setWinner;
@@ -181,6 +192,7 @@ window.finishedLeg = () => {
         sets.push({
             type: "set",
             turns: legs,
+            players: currentGame.players,
             winner: setWinner
         });
         // Check if Game-Winner exists
@@ -196,37 +208,41 @@ window.finishedLeg = () => {
         });
         currentGame.turns = sets;
         if (currentGame.setAction) {
-            action = currentGame.setAction; type = "set";
+            action = currentGame.setAction;
         } else if (currentGame.legAction) {
-            action = currentGame.legAction; type = "leg";
+            action = currentGame.legAction;
         }
     } else {
         // Just won a Leg
         legs.push({
             type: "leg",
             turns: turns,
+            players: currentGame.players,
             winner: turns.filter((t) => t.finish != undefined).pop()
         });
         currentGame.turns = [...sets, ...legs];
         if (currentGame.legAction) {
-            action = currentGame.legAction; type = "leg";
+            action = currentGame.legAction;
         }
     }
-    popoverAction(action, type, createGameUI);
+    popoverAction("win", ()=>popoverAction(action, createGameUI));
 };
 
 window.dbloaded = () => {
     window.currentGame = (window.activeGames || []).filter((ag) => ag.playing == true).pop();
-    let action, type;
+    let action;
     if (currentGame.gameAction) {
-        action = currentGame.gameAction; type = "game";
+        action = currentGame.gameAction;
     } else if (currentGame.setAction) {
-        action = currentGame.setAction; type = "set";
+        action = currentGame.setAction;
     } else if (currentGame.legAction) {
-        action = currentGame.legAction; type = "leg";
+        action = currentGame.legAction;
     }
     // Start Game
-    popoverAction(action, type, createGameUI);
+    popoverAction(action, ()=>{
+        currentGame.startingOrder = currentGame.players;
+        createGameUI();
+    });
 }
 
 // Board Overlay Logic
@@ -268,4 +284,7 @@ $("section.overlays .dart-board .board img").click(function (e) {
         });
     };
     crossHair.click(crossHairClick);
+});
+$("section.overlays .backdrop").on('click touchdown', ()=>{
+    $('section.overlays, section.overlays > .visible').removeClass('visible');
 });
