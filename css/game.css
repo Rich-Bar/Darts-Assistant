@@ -114,7 +114,8 @@ section.game .turn input {
 
 section.overlays>*:not(.backdrop):not(.visible),
 section.overlays:not(.visible) {
-    display: none;
+    opacity: 0;
+    pointer-events: none;
 }
 
 section.overlays {
@@ -124,6 +125,11 @@ section.overlays {
     bottom: 0;
     left: 0;
     z-index: 10;
+    transition: opacity 250ms linear;
+}
+section.overlays.visible{
+    pointer-events: all;
+    opacity: 1;
 }
 
 section.overlays .backdrop {
@@ -158,4 +164,39 @@ section.overlays .board {
     margin: 0;
     width: min-content;
     display: block;
+}
+
+section.overlays .win{
+    opacity: 0;
+    background: linear-gradient(90deg, transparent, white 20%, white 80%,transparent);
+    border-top: 1px solid #ccc9;
+    border-bottom: 1px solid #ccc9;
+    box-shadow: 0px 1px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    padding: 1em;
+    max-width: 1200px;
+    min-width: 320px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    top: 50%;
+    transition: opacity 250ms linear;
+}
+section.overlays .win.visible{
+    opacity: 1;
+}
+
+section.overlays .win h3{
+    text-transform: capitalize;
+    font-variant-caps: small-caps;
+    font-size: 1.5rem;
+}
+
+section.overlays .win .username{
+    text-transform: capitalize;
+    font-variant-caps: small-caps;
+    text-decoration: underline;
+    font-size: 2.5rem;
+    margin-bottom: -0.333em;
+    white-space-collapse: preserve;
 }

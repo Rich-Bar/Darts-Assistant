@@ -36,15 +36,14 @@ window.popoverAction = (action, callback) => {
     if(action == "bulls" || action == "board"){
         $('.overlays, .overlays > .dart-board').addClass('visible');
     }else if(action == "win"){
-        $('.overlays, .overlays > .win').addClass('visible');
-        $('.overlays > .win > h3').text('Winner');
-        $('.overlays > .win').animate({
-            opacity: 0.25,
-            left: "+=50",
-            height: "toggle"
-          }, 2500, function() {
-            $('.overlays, .overlays > .win').removeClass('visible');
-          });
+        $('.overlays > .win h3').text(currentGame.turns[currentGame.turns.length-1].type + ' Winner');
+        $('.overlays > .win .username').text("  "+players.filter((p)=>p.id==currentGame.turns[currentGame.turns.length-1].winner).pop().username+"  ");
+        $('.overlays, .overlays .win').addClass('visible');
+        setTimeout(()=>{
+            $('.overlays, .overlays .win').removeClass('visible')
+            if(typeof(callback)=="function")setTimeout(()=>callback());
+        },5000);
+        return;
     }else if(action == "random"){
         currentGame.players = shuffle(currentGame.players);
     }else if(action == "rotate"){
@@ -202,7 +201,6 @@ window.createGameUI = () => {
     //Clear Scoreboard
     $("section.game .scoreboard").html('');
     currentGame.players.forEach((player) => {
-        console.log(currentGame, player);
         player = players.filter((pl) => pl.id == player).pop();
         $('section.game .scoreboard').append(`
             <div data-id="${player.id}" class="player${playerIndex++ == 0?" selected":""}">
