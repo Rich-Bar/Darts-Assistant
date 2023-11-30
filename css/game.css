@@ -18,9 +18,10 @@ section.game .scoreboard {
     width: max-content;
     max-width: calc(100svw - 4em);
     flex-grow: 1;
-    mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
-    padding: 0 5%;
+    mask-image: linear-gradient(to right, transparent 0%, black 2em, black calc(100% - 2em), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 2em, black calc(100% - 2em), transparent 100%);
+    padding: 0 2em;
+    scroll-behavior: smooth;
     -ms-overflow-style: none;
     /* IE and Edge */
     scrollbar-width: none;

@@ -58,12 +58,13 @@ window.popoverAction = (action, callback) => {
 
 window.handleScoreInput = (e) => {
     let inputRow = $(e.target).parents('.turn').last();
-    let inputValue = parseInt($(e).val()||-1);
+    let cid = $(e.target).parents('.player').attr('data-id');
 
     // Calculate Score
-    let currentRemaining = parseInt(inputRow.find('td:first-child').text()), turnScore = 0, throws = [], isIn = false;
+    let currentRemaining = parseInt(inputRow.find('td:first-child').text()), turnScore = 0, throws = [], isIn = false, showNextPlayer = false;
     inputRow.find('input').each((i, e) => {
-        if ($(e.target).is('[name="total"]')) {
+        let inputValue = parseInt($(e).val()||-1);
+        if ($(e).is('[name="total"]')) {
             if(inputValue < 0 || inputValue > 180 || [179, 178, 176, 175, 173, 172, 169, 166, 163].includes(inputValue)) return;
             turnScore = inputValue;
         } else {
@@ -73,6 +74,8 @@ window.handleScoreInput = (e) => {
                 if(inputValue%2==0){
                     throws.push({ score: inputValue });
                     turnScore = turnScore + inputValue;
+                }else{
+                    throws.push({ score: 0 });
                 }
             }else{
                 throws.push({ score: inputValue });
@@ -87,7 +90,7 @@ window.handleScoreInput = (e) => {
         // Display Turn Total
     inputRow.find(".total").text(turnScore);
     if (finish){
-        let saveTurn = ()=>{
+        let saveFinish = ()=>{
             // Save Turn
             let turn = {
                 player: player.id,
@@ -104,16 +107,54 @@ window.handleScoreInput = (e) => {
         //Check if finished
         if(currentGame.doubleOut){
             if(parseInt($(e.target).val())%2==0){
-                saveTurn();
+                saveFinish();
                 return;
-            }
+            }else if(currentRemaining - turnScore == 1){
+                // Save Turn
+                let turn = {
+                    player: player.id,
+                    toClear: currentRemaining,
+                    score: 0,
+                    over: -1,
+                    finish: false,
+                    throws: throws,
+                    timestamp: Date.now()
+                };
+                currentGame.turns.push(turn);
+                showNextPlayer = true;
+            }else if(currentRemaining - turnScore < 0){
+                // Save Turn
+                let turn = {
+                    player: player.id,
+                    toClear: currentRemaining,
+                    score: 0,
+                    over: turnScore - currentRemaining,
+                    finish: false,
+                    throws: throws,
+                    timestamp: Date.now()
+                };
+                currentGame.turns.push(turn);
+                showNextPlayer = true;
+            }   
         }else{
-            saveTurn();
+            saveFinish();
             return;
         }
     }
-    // Turn Complete
-    if ($("section.game .player.selected .turn input:visible").filter((i, e) => $(e).val() == "").length == 0) {
+    // Turn Complete // Show next Player
+    if ($("section.game .player.selected .turn input:visible").filter((i, e) => $(e).val() == "").length == 0 || showNextPlayer) {
+        // Save Turn
+        let turn = {
+            player: player.id,
+            toClear: currentRemaining,
+            score: turnScore,
+            over: over,
+            finish: finish,
+            throws: throws,
+            timestamp: Date.now()
+        };
+        currentGame.turns.push(turn);
+        // Find next Player
         let cid = $(e.target).parents('.player').attr('data-id'), found, next, last;
         currentGame.players.forEach((player) => {
             if (next == true) {
@@ -150,7 +191,7 @@ window.handleScoreInput = (e) => {
         });
 
         // Show next Player
-        $('.player[data-id="' + found + '"]').addClass('selected')[0].scrollTo();
+        $('.player[data-id="' + found + '"]').addClass('selected').find('.turn .total')[0].scrollIntoView();
     }
     //Focus next Input
     $("section.game .player .turn input:visible").filter((i, e) => $(e).val() == "").first().focus();
