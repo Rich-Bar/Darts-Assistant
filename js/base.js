@@ -45,9 +45,9 @@ window.saveDB = (callback)=>{// set settings as cookie
         var playersStore = txPlayers.objectStore("PlayersStorage");
         var waitFor = 3;
         // Add some data
-        games.forEach(game => gamesStore.put(game));
-        activeGames.forEach(game => activeGamesStore.put(game));
-        players.forEach(player => playersStore.put(player));
+        games.forEach(game => game.delete==true?gamesStore.delete(game.id):gamesStore.put(game));
+        activeGames.forEach(game => game.delete==true?activeGamesStore.delete(game.id):activeGamesStore.put(game));
+        players.forEach(player => player.delete==true?playersStore.delete(player.id):playersStore.put(player));
 
         // Close the db when the transaction is done
         txActiveGames.oncomplete = function () {

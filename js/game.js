@@ -281,17 +281,29 @@ window.finishedLeg = () => {
             winner: setWinner
         });
         // Check if Game-Winner exists
-        let setWinCount = {};
+        let setWinCount = {}, gameWinner;
         sets.forEach((set) => {
             setWinCount[set.winner] = (setWinCount[set.winner] || 0) + 1;
         });
         Object.entries(setWinCount).forEach((e, i) => {
             if ((currentGame.bestOfSets == true && e[1] > currentGame.sets / 2) ||
                 (currentGame.bestOfSets != true && e[1] >= currentGame.sets)) {
-                currentGame.winner = e[0];
-                // TODO Won Game
+                gameWinner = currentGame.winner = e[0];
+                $('.overlays > .backdrop').css('background',"#222b");
+                $('.overlays > .win h3').text('Game Winner');
+                $('.overlays > .win .username').text("  "+players.filter((p)=>p.id==e[0]).pop().username+"  ");
+                $('.overlays, .overlays .win').addClass('visible');
+                currentGame.playing = false;
+                activeGames = JSON.parse(JSON.stringify(activeGames));
+                activeGames.filter((ag)=>ag.id == currentGame.id).forEach((ag)=>ag.delete=true);
+                window.games.push(currentGame);
+                setTimeout(()=>{
+                    $('.overlays .win').removeClass('visible');
+                    saveDB(()=>{setTimeout(()=>window.location.href="index.html",250)})
+                },5000);
             }
         });
+        if(gameWinner)return;
         currentGame.turns = sets;
         if (currentGame.setAction) {
             action = currentGame.setAction;
