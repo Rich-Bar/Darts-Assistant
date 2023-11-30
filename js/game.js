@@ -32,6 +32,8 @@ window.calculateScore = (x, y) => {
     return { points: scored, angle: angle, distance: distance, x: x, y: y };
 }
 
+window.legRotation = 0;
+window.setRotation = 0;
 window.popoverAction = (action, callback) => {
     if(action == "bulls" || action == "board"){
         $('.overlays, .overlays > .dartboard').addClass('visible');
@@ -49,8 +51,6 @@ window.popoverAction = (action, callback) => {
     setTimeout(()=>callback());
 };
 
-window.legRotation = 0;
-window.setRotation = 0;
 window.handleScoreInput = (e) => {
     let inputRow = $(e.target).parents('.turn').last();
     inputRow.find(".total").text(inputRow.find("input").get().reduce((p, c) => p + parseInt($(c).val() || 0), 0));
@@ -167,28 +167,32 @@ window.createGameUI = () => {
 window.finishedLeg = () => {
     let turns = currentGame.turns.filter((t) => t.type == undefined),
         legs = currentGame.turns.filter((t) => t.type == "leg"),
-        sets = currentGame.turns.filter((t) => t.type == "set");
-
-    let action, type;
-    if ((currentGame.bestOfLegs == true && (legs.length + 1) > currentGame.legs / 2) ||
-        (currentGame.bestOfLegs != true && (legs.length + 1) >= currentGame.legs)) {
-        // Won Set
-        legs.push({
-            type: "leg",
-            turns: turns,
-            players: currentGame.players,
-            winner: turns.filter((t) => t.finish != undefined).pop().player
-        });
-        let legWinCount = {}, setWinner;
-        legs.forEach((leg) => {
-            legWinCount[leg.winner] = (legWinCount[leg.winner] || 0) + 1;
-        });
-        Object.entries(legWinCount).forEach((key, value) => {
-            if ((currentGame.bestOfLegs == true && value > currentGame.legs / 2) ||
-                (currentGame.bestOfLegs != true && value >= currentGame.legs)) {
-                setWinner = key;
-            }
-        });
+        sets = currentGame.turns.filter((t) => t.type == "set"), action;
+    
+    // Just won a Leg
+    legs.push({
+        type: "leg",
+        turns: turns,
+        players: currentGame.players,
+        winner: turns.filter((t) => t.finish != undefined).pop().player
+    });
+    currentGame.turns = [...sets, ...legs];
+    if (currentGame.legAction) {
+        action = currentGame.legAction;
+    }
+    // Check if Won Set
+    let legWinCount = {}, setWinner;
+    legs.forEach((leg) => {
+        legWinCount[leg.winner] = (legWinCount[leg.winner] || 0) + 1;
+    });
+    Object.entries(legWinCount).forEach((e, i) => {
+        if ((currentGame.bestOfLegs == true && e[1] > currentGame.legs / 2) ||
+            (currentGame.bestOfLegs != true && e[1] >= currentGame.legs)) {
+            setWinner = e[0];
+        }
+    });
+    console.log(legWinCount, setWinner);
+    if(setWinner){
         sets.push({
             type: "set",
             turns: legs,
@@ -200,28 +204,17 @@ window.finishedLeg = () => {
         sets.forEach((set) => {
             setWinCount[set.winner] = (setWinCount[set.winner] || 0) + 1;
         });
-        Object.entries(setWinCount).forEach((key, value) => {
-            if ((currentGame.bestOfSets == true && value > currentGame.sets / 2) ||
-                (currentGame.bestOfSets != true && value >= currentGame.sets)) {
-                currentGame.winner = key;
+        Object.entries(setWinCount).forEach((e, i) => {
+            if ((currentGame.bestOfSets == true && e[1] > currentGame.sets / 2) ||
+                (currentGame.bestOfSets != true && e[1] >= currentGame.sets)) {
+                currentGame.winner = e[0];
+                // TODO Won Game
             }
         });
         currentGame.turns = sets;
         if (currentGame.setAction) {
             action = currentGame.setAction;
         } else if (currentGame.legAction) {
-            action = currentGame.legAction;
-        }
-    } else {
-        // Just won a Leg
-        legs.push({
-            type: "leg",
-            turns: turns,
-            players: currentGame.players,
-            winner: turns.filter((t) => t.finish != undefined).pop()
-        });
-        currentGame.turns = [...sets, ...legs];
-        if (currentGame.legAction) {
             action = currentGame.legAction;
         }
     }
