@@ -150,10 +150,10 @@ $(() => {
                             </label>
                             <label for="Score Entering Method">
                                 <span>Score Entering Method</span>
-                                <select name="sem" value="${player.sem}" invalid>
-                                    <option value="total">Total Score</option>
-                                    <option value="perDart">Per Dart</option>
-                                    <option value="dartPosition">Dartboard Position</option>
+                                <select name="sem" invalid>
+                                    <option value="total" ${player.sem=="total"?"selected":""}>Total Score</option>
+                                    <option value="perDart" ${player.sem=="perDart"?"selected":""}>Per Dart</option>
+                                    <option value="dartPosition" ${player.sem=="dartPosition"?"selected":""}>Dartboard Position</option>
                                 </select>
                             </label>
                             <button type="submit">Save</button>
