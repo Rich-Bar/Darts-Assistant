@@ -86,11 +86,14 @@ window.handleScoreInput = (e) => {
         finish = currentRemaining == turnScore,
         player = window.players.filter((pl) => pl.id == cid).pop();
     
-        // Display Turn Total
+    if(player.turnScoreCount == undefined) player.turnScoreCount = [];
+    
+    // Display Turn Total
     inputRow.find(".total").text(turnScore);
     if (finish){
         let saveFinish = ()=>{
             // Save Turn
+            player.turnScoreCount[turnScore] = (player.turnScoreCount[turnScore]||0)+1;
             let turn = {
                 player: player.id,
                 toClear: currentRemaining,
@@ -108,21 +111,9 @@ window.handleScoreInput = (e) => {
             if(parseInt($(e.target).val())%2==0){
                 saveFinish();
                 return;
-            }else if(currentRemaining - turnScore == 1){
+            }else if(currentRemaining - turnScore == 1 || currentRemaining - turnScore < 0){
                 // Save Turn
-                let turn = {
-                    player: player.id,
-                    toClear: currentRemaining,
-                    score: 0,
-                    over: -1,
-                    finish: false,
-                    throws: throws,
-                    timestamp: Date.now()
-                };
-                currentGame.turns.push(turn);
-                showNextPlayer = true;
-            }else if(currentRemaining - turnScore < 0){
-                // Save Turn
+                player.turnScoreCount[0] = (player.turnScoreCount[0]||0)+1;
                 let turn = {
                     player: player.id,
                     toClear: currentRemaining,
@@ -134,7 +125,7 @@ window.handleScoreInput = (e) => {
                 };
                 currentGame.turns.push(turn);
                 showNextPlayer = true;
-            }   
+            }
         }else{
             saveFinish();
             return;
@@ -143,6 +134,7 @@ window.handleScoreInput = (e) => {
     // Turn Complete // Show next Player
     if ($("section.game .player.selected .turn input:visible").filter((i, e) => $(e).val() == "").length == 0 || showNextPlayer) {
         // Save Turn
+        player.turnScoreCount[turnScore] = (player.turnScoreCount[turnScore]||0)+1;
         let turn = {
             player: player.id,
             toClear: currentRemaining,
