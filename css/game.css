@@ -25,6 +25,9 @@ section.statistics {
 
 section.statistics > div {
     height: 11em;
+    width:20%;
+    max-width: 20%;
+    min-width: 20%;
     background: #fffc;
     box-shadow: 0 1px 10px #eeec;
     flex-grow: 1;

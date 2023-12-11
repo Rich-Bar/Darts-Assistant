@@ -333,7 +333,57 @@ window.dbloaded = () => {
         createGameUI();
     });
 }
+// Initialize Graphs & Stats
+let dummyOptions=(title) => {return {
+    series: title=='Set Leg Wins'? Array.from({length: 4}, () => Math.floor(Math.random() * 100)).sort((a,b)=>a-b):[{
+      name: "Player 1",
+      data: Array.from({length: 10}, () => Math.floor(Math.random() * 180)).sort((a,b)=>b-a)
+  },{
+    name: "Player 2",
+    data: Array.from({length: 10}, () => Math.floor(Math.random() * 180)).sort((a,b)=>b-a)
+}],
+  chart: {
+    width: "100%",
+    height: "100%",
+    type: title=="Average" || title == "Remainder"?'line':title=='Set Leg Wins'?'radialBar':'bar',
+    stacked:title=='Doubles'?true:false,
+    toolbar:{show:false},
+    zoom: {
+      enabled: false
+    }
+  },
+  legend:{show:false},
+  dataLabels: {
+    style:{fontSize:'10px'},
+    enabled: false
+  },
+  stroke: {
+    curve: 'straight',
+    width: 2
+  },
+  title: {
+    text: title,
+    align: 'left'
+  },
+  grid: {
+    row: {
+      colors: ['#f3f3f3', 'transparent'], // takes an array which will be repeated on columns
+      opacity: 0.5
+    },
+  },
+  };
+};
 
+  let chart = new ApexCharts($('section.statistics > div:nth-child(1) > div')[0], dummyOptions('Average'));
+  let chart2 = new ApexCharts($('section.statistics > div:nth-child(2) > div')[0], dummyOptions('Remainder'));
+  let chart3 = new ApexCharts($('section.statistics > div:nth-child(3) > div')[0], dummyOptions('Score Over'));
+  let chart4 = new ApexCharts($('section.statistics > div:nth-child(4) > div')[0], dummyOptions('Doubles'));
+  let chart5 = new ApexCharts($('section.statistics > div:nth-child(5) > div')[0], dummyOptions('Set Leg Wins'));
+  chart.render();
+  chart2.render();
+  chart3.render();
+  chart4.render();
+  chart5.render();
 // Board Overlay Logic
 $("section.overlays .dart-board .board img").click(function (e) {
     e.preventDefault();
