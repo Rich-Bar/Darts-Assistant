@@ -34,7 +34,7 @@ window.calculateScore = (x, y) => {
 
 window.popoverAction = (action, callback) => {
     if(action == "bulls" || action == "board"){
-        $('.overlays, .overlays > .dart-board').addClass('visible');
+        $('.overlays, .overlays > .dart-board').toggleClass('visible');
     }else if(action == "win"){
         $('.overlays > .win h3').text(currentGame.turns[currentGame.turns.length-1].type + ' Winner');
         $('.overlays > .win .username').text("  "+players.filter((p)=>p.id==currentGame.turns[currentGame.turns.length-1].winner).pop().username+"  ");
@@ -93,6 +93,8 @@ window.handleScoreInput = (e) => {
     
     // Display Turn Total
     scoreSpan.text(turnScore);
+    // No other actions if Dart-Board Overlay is visible
+    if($('.overlays, .overlays > .dart-board').hasClass('visible')) return;
     if (finish){
         let saveFinish = ()=>{
             // Save Turn
@@ -401,9 +403,11 @@ $("section.overlays .dart-board .board img").click(function (e) {
     if ($("section.overlays .dart-board .board > span").length == 3) {
         return;
     }
+    $($("section.game .player .turn input:visible")[$("section.overlays .dart-board .board > span").length]).val(scored.points).change().focus();
+    $("section.game .player .turn input.total:visible").val(parseInt($("section.game .player .turn input.total:visible").val()) + scored.points).change().focus();
     //Place Position Marker
     var halfCrosshairSize = Math.floor(boardSize / 50);
-    let crossHair = $('section.overlays .dart-board .board').append('<span class="ui-draggable ui-draggable-handle" style="top: ' + (-halfCrosshairSize + e.offsetY) + 'px;left: ' + (-halfCrosshairSize + e.offsetX) + 'px;"></span>');
+    let crossHair = $('section.overlays .dart-board .board').append('<span class="ui-draggable ui-draggable-handle" data-throw="'+$("section.overlays .dart-board .board > span").length+'" style="top: ' + (-halfCrosshairSize + e.offsetY) + 'px;left: ' + (-halfCrosshairSize + e.offsetX) + 'px;"></span>');
     let crossHairClick = function (e) {
         e.stopImmediatePropagation();
         let boardX = e.offsetX + parseInt($(e.target).css('left').replace('px', ''));
@@ -412,15 +416,25 @@ $("section.overlays .dart-board .board img").click(function (e) {
 
         let scored = calculateScore(boardX, boardY);
         if (scored == null) return;
+        //Check if already thrown
+        if ($("section.overlays .dart-board .board > span").length == 3) {
+            return;
+        }
         let crossHairr = $('section.overlays .dart-board .board').append('<span class="ui-draggable ui-draggable-handle" style="top: ' + (-halfCrosshairSize + boardY) + 'px;left: ' + (-halfCrosshairSize + boardX) + 'px;"></span>');
         crossHairr.on("click", crossHairClick);
-        $('section.overlays .dart-board .board > span').draggable({
-            stop: function (e, ui) {
-                let scored = calculateScore(ui.position.left + halfCrosshairSize, ui.position.top + halfCrosshairSize);
-                if (scored == null) return;
-            }
-        });
+        $($("section.game .player .turn input:visible")[$(e).attr('data-throw')]).val(scored.points).change().focus();
+        $("section.game .player .turn input.total:visible").val(parseInt($("section.game .player .turn input.total:visible").val()) + scored.points).change().focus();
     };
+    
+    $('section.overlays .dart-board .board > span').draggable({
+        stop: function (e, ui) {
+            let scored = calculateScore(ui.position.left + halfCrosshairSize, ui.position.top + halfCrosshairSize);
+            if (scored == null) return;
+            console.log(e);
+            $($("section.game .player .turn input:visible")[$(e).attr('data-throw')]).val(scored.points).change().focus();
+            $("section.game .player .turn input.total:visible").val(parseInt($("section.game .player .turn input.total:visible").val()) + scored.points).change().focus();
+        }
+    });
     crossHair.click(crossHairClick);
 });
 $("section.overlays .backdrop").on('click touchdown', ()=>{
