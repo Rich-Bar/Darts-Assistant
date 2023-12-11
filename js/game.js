@@ -57,6 +57,7 @@ window.popoverAction = (action, callback) => {
 
 window.handleScoreInput = (e) => {
     let inputRow = $(e.target).parents('.turn').last();
+    let scoreSpan = inputRow.find("span.total");
     let cid = $(e.target).parents('.player').attr('data-id');
 
     // Calculate Score
@@ -82,6 +83,8 @@ window.handleScoreInput = (e) => {
             }
         }
     });
+    inputRow.attr('data-total', turnScore);
+    throws.forEach((tr, i)=>inputRow.attr('data-throw-'+i, tr.score));
     let over = Math.min(0, currentRemaining - turnScore),
         finish = currentRemaining == turnScore,
         player = window.players.filter((pl) => pl.id == cid).pop();
@@ -89,7 +92,7 @@ window.handleScoreInput = (e) => {
     if(player.turnScoreCount == undefined) player.turnScoreCount = [];
     
     // Display Turn Total
-    inputRow.find(".total").text(turnScore);
+    scoreSpan.text(turnScore);
     if (finish){
         let saveFinish = ()=>{
             // Save Turn
@@ -133,6 +136,7 @@ window.handleScoreInput = (e) => {
     }
     // Turn Complete // Show next Player
     if ($("section.game .player.selected .turn input:visible").filter((i, e) => $(e).val() == "").length == 0 || showNextPlayer) {
+        scoreSpan.after(`<svg class="edit pencil" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000" height="1em" width="1em" version="1.1" viewBox="0 0 306.637 306.637" xml:space="preserve"><path d="M12.809,238.52L0,306.637l68.118-12.809l184.277-184.277l-55.309-55.309L12.809,238.52z M60.79,279.943l-41.992,7.896    l7.896-41.992L197.086,75.455l34.096,34.096L60.79,279.943z"/><path d="M251.329,0l-41.507,41.507l55.308,55.308l41.507-41.507L251.329,0z M231.035,41.507l20.294-20.294l34.095,34.095    L265.13,75.602L231.035,41.507z"/></svg>`);
         // Save Turn
         player.turnScoreCount[turnScore] = (player.turnScoreCount[turnScore]||0)+1;
         let turn = {
@@ -376,17 +380,21 @@ $("section.overlays .backdrop").on('click touchdown', ()=>{
 window.updateStatistics = ()=>{
     currentGame.players.forEach((pid)=>{
         let player = players.filter((p)=>p.id == pid).pop();
-        let average, doubleInChances = {tries:0,hits:0}, doubleOutChances = {tries:0,hits:0}, legWins, setWins, legAverages = [], setAverages = [];
         let calculateStats = (turn)=>{
+            let result = {average:0, doubleInChances: {tries:0,hits:0}, doubleOutChances: {tries:0,hits:0}, legWins:0, setWins:0, legAverages: [], setAverages: [], throws: 0, totalScore:0};
             if(turn.type == undefined){
+                if(turn.player != player.id) return;
                 if(turn.throws.length){
-
+                    result.throws += 3;
+                    result.totalScore += turn.score;
+                    result.average += turn.score / (result.throws/3);
                 }
             }else if(turn.type == "leg"){
-
+                if(turn.winner == player.id) result.legWins++;
             }else if(turn.type == "set"){
-
+                if(turn.winner == player.id) result.setWins++;
             }
+            return result;
         }
         currentGame.turns.forEach(calculateStats);
     });

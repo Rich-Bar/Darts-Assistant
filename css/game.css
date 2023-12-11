@@ -1,17 +1,33 @@
-section.game {
-    min-height: 100svh;
+body{
     display: flex;
-    gap: 2em;
     flex-direction: column;
     align-items: center;
 }
 
-section.game .statistics {
-    min-height: 100px;
+section.game {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 0em;
+}
+
+section.statistics {
+    display: flex;
+    padding: 0;
+    justify-content: space-around;
+    min-height: 11em;
     width: 100%;
     background: #f4f4f4cc;
     border: 1px solid #ccc8;
     box-shadow: 0px 1px 8px rgba(0, 0, 0, 0.1);
+}
+
+section.statistics > div {
+    height: 11em;
+    background: #fffc;
+    box-shadow: 0 1px 10px #eeec;
+    flex-grow: 1;
 }
 
 section.game .scoreboard {
@@ -32,13 +48,17 @@ section.game .scoreboard::-webkit-scrollbar {
     display: none;
 }
 
+tr.turn:nth-child(2n) {
+    background: #eee7;
+}
+
 section.game .player {
     display: flex;
     flex-direction: column;
     align-items: center;
     min-width: 320px;
     width: max-content;
-    max-height: calc(100svh - calc(100px + 6em));
+    max-height: calc(100svh - 15em);
     background-color: #f4f4f4;
     border: 1px #ccc;
     box-shadow: 0px 1px 8px rgba(0, 0, 0, 0.15);
@@ -93,7 +113,18 @@ section.game .turn td>span {
 
 section.game .turn td {
     position: relative;
-    padding: 0.5em 0.5em 0;
+    padding: 0.25em 0.5em;
+}
+
+section.game .turn .edit.pencil{
+    float: inline-end;
+    opacity: 0.8;
+    transition: all 250ms linear;
+}
+section.game .turn .edit.pencil:hover{
+    transform: scale(1.1);
+    transform-origin: center;
+    opacity: 1;
 }
 
 section.game .turn td>.modifier {
