@@ -356,58 +356,20 @@ window.dbloaded = () => {
     });
 }
 // Initialize Graphs & Stats
-let dummyOptions = (title) => {
-    return {
-        series: title == 'Set Leg Wins' ? Array.from({ length: 4 }, () => Math.floor(Math.random() * 100)).sort((a, b) => a - b) : [{
-            name: "Player 1",
-            data: Array.from({ length: 10 }, () => Math.floor(Math.random() * 180)).sort((a, b) => b - a)
-        }, {
-            name: "Player 2",
-            data: Array.from({ length: 10 }, () => Math.floor(Math.random() * 180)).sort((a, b) => b - a)
-        }],
-        chart: {
-            width: "100%",
-            height: "100%",
-            type: title == "Average" || title == "Remainder" ? 'line' : title == 'Set Leg Wins' ? 'radialBar' : 'bar',
-            stacked: title == 'Doubles' ? true : false,
-            toolbar: { show: false },
-            zoom: {
-                enabled: false
-            }
-        },
-        legend: { show: false },
-        dataLabels: {
-            style: { fontSize: '10px' },
-            enabled: false
-        },
-        stroke: {
-            curve: 'straight',
-            width: 2
-        },
-        title: {
-            text: title,
-            align: 'left'
-        },
-        grid: {
-            row: {
-                colors: ['#f3f3f3', 'transparent'], // takes an array which will be repeated on columns
-                opacity: 0.5
-            },
-        },
-    };
+let initialOptions = (title) => {
+    return {series:[],chart:{width:"100%",height:"100%",type:title == "Average" || title == "Remainder" ? 'line' : title == 'Set Leg Wins' ? 'radialBar' : 'bar',stacked:title == 'Doubles' ? true : false,toolbar:{show:false},zoom:{enabled:false}},legend:{show:false},dataLabels:{style:{fontSize:"10px"},enabled:false},stroke:{curve:"straight",width:2},title:{text:title,align:"center"},grid:{row:{colors:["#f3f3f3","transparent"],opacity:0.5}}};
 };
+
 window.charts = {
-    average: new ApexCharts($('section.statistics > div:nth-child(1) > div')[0], dummyOptions('Average')),
-    remainder: new ApexCharts($('section.statistics > div:nth-child(2) > div')[0], dummyOptions('Remainder')),
-    over: new ApexCharts($('section.statistics > div:nth-child(3) > div')[0], dummyOptions('Score Over')),
-    doubles: new ApexCharts($('section.statistics > div:nth-child(4) > div')[0], dummyOptions('Doubles')),
-    wins: new ApexCharts($('section.statistics > div:nth-child(5) > div')[0], dummyOptions('Set Leg Wins'))
-}
-chart.render();
-chart2.render();
-chart3.render();
-chart4.render();
-chart5.render();
+    average: new ApexCharts($('section.statistics > div:nth-child(1) > div')[0], initialOptions('Average')),
+    remainder: new ApexCharts($('section.statistics > div:nth-child(2) > div')[0], initialOptions('Remainder')),
+    over: new ApexCharts($('section.statistics > div:nth-child(3) > div')[0], initialOptions('Score Over')),
+    doubles: new ApexCharts($('section.statistics > div:nth-child(4) > div')[0], initialOptions('Doubles')),
+    wins: new ApexCharts($('section.statistics > div:nth-child(5) > div')[0], initialOptions('Set Leg Wins'))
+};
+Object.keys(window.charts).forEach((k)=>{
+    window.charts[k].render();
+})
 // Board Overlay Logic
 $("section.overlays .dart-board .board img").click(function (e) {
     e.preventDefault();
@@ -513,5 +475,25 @@ window.updateStatistics = () => {
         independetStats.average += (rollingStat.average - independetStats.average) * (rollingStat.throws / independetStats.throws); // See RFC 2  
     });
     currentGame.stats[0] = independetStats;
-    console.log(currentGame.stats);
+    
+    Object.keys(window.charts).forEach((k)=>{
+        switch (k) {
+            case 'average':
+                
+                break;
+            case 'remainder':
+                
+                break;    
+            case 'over':
+                
+            break;
+            case 'doubles':
+                
+                break;
+            case 'wins':
+                
+            break;
+        }
+        window.charts[k].render();
+    });
 }
