@@ -462,24 +462,54 @@ $("section.overlays .backdrop").on('click touchdown', ()=>{
 });
 
 window.updateStatistics = ()=>{
+    currentGame.stats ={};
+    let independetStats = {average:0, doubleInChances: {tries:0,hits:0}, doubleOutChances: {tries:0,hits:0}, wins:[], throws: 0, turns: 0, totalScore:0, totalOver:0};
     currentGame.players.forEach((pid)=>{
         let player = players.filter((p)=>p.id == pid).pop();
-        let calculateStats = (turn)=>{
-            let result = {average:0, doubleInChances: {tries:0,hits:0}, doubleOutChances: {tries:0,hits:0}, legWins:0, setWins:0, legAverages: [], setAverages: [], throws: 0, totalScore:0};
+        let calculateStats = (turn, preResult)=>{
+            let result = {average:0, doubleInChances: {tries:0,hits:0}, doubleOutChances: {tries:0,hits:0}, wins:[], throws: 0, turns: 0, totalScore:0, totalOver:0, ...preResult};
             if(turn.type == undefined){
                 if(turn.player != player.id) return;
+                result.turns++;
+                if(turn.over != 0) result.totalOver += Math.abs(turn.over);
+                else result.totalScore += turn.score;
+                // ToDo: DoubleIn / DoubleOut
                 if(turn.throws.length){
+                    let thrown = turn.throws.length;
+                    result.throws += thrown;
+                    result.average += ((turn.score / thrown) * 3 - result.average) / result.turns;   // RFC 2: Average per Dart is different from 3 Dart Average if player throws too high
+                }else{
                     result.throws += 3;
-                    result.totalScore += turn.score;
-                    result.average += turn.score / (result.throws/3);
+                    result.average += (turn.score - result.average) / result.turns;
                 }
-            }else if(turn.type == "leg"){
-                if(turn.winner == player.id) result.legWins++;
-            }else if(turn.type == "set"){
-                if(turn.winner == player.id) result.setWins++;
-            }
+            }else{
+                let rollingStat = result;
+                turn.turns.forEach((turn) =>{
+                    let turnStat = turn.stats[player.id]||calculateStats(turn,rollingStat);
+                    if(turnStat)rollingStat = turnStat;
+                });
+                result = rollingStat;
+                
+                if(turn.type == "leg" && turn.winner == player.id) result.wins[0] = (result.wins[0]||0)+1;
+                else if(turn.type == "set" && turn.winner == player.id) result.wins[1] = (result.wins[1]||0)+1;
+            } 
+    
+            turn.stats[player.id] = result;
             return result;
         }
-        currentGame.turns.forEach(calculateStats);
+        let rollingStat={};
+        currentGame.turns.forEach((turn) =>{
+            let turnStat = turn.stats[player.id]||calculateStats(turn,rollingStat);
+            if(turnStat)rollingStat = turnStat;
+        });
+        currentGame.stats[player.id] = rollingStat;
+
+        independetStats.throws += rollingStat.throws;
+        independetStats.turns += rollingStat.turns; 
+        independetStats.totalScore += rollingStat.totalScore;
+        independetStats.totalOver += rollingStat.totalOver; 
+        independetStats.average += (rollingStat.average - independetStats.average) * (rollingStat.throws / independetStats.throws); // See RFC 2  
     });
+    currentGame.stats[0] = independetStats;
+    console.log(currentGame.stats);
 }
