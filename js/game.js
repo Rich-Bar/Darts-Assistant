@@ -85,10 +85,11 @@ window.handleScoreInput = (e) => {
     });
     inputRow.attr('data-total', turnScore);
     throws.forEach((tr, i)=>inputRow.attr('data-throw-'+i, tr.score));
-    let over = Math.min(0, currentRemaining - turnScore),
-        finish = currentRemaining == turnScore,
+    let over = currentRemaining - turnScore <2?currentRemaining - turnScore:0,
+        finish = currentRemaining == (turnScore-over),
         player = window.players.filter((pl) => pl.id == cid).pop();
     
+    if(over != 0) showNextPlayer = true;
     if(player.turnScoreCount == undefined) player.turnScoreCount = [];
     
     // Display Turn Total
@@ -170,7 +171,7 @@ window.handleScoreInput = (e) => {
         // Append new Row for next Turn
         inputRow.after(`
             <tr class="turn${finish ? "finish" : ""}">
-                <td>${over < 0 ? currentRemaining : currentRemaining - turnScore}</td>
+                <td>${over != 0 ? currentRemaining : currentRemaining - turnScore}</td>
                 <td>
                 ${player.sem == "total" ? `<input class="total" type="number" name="total" maxlength="3" min="0" max="180" required/>` :
                 `<input class="throw" type="number" name="throw-1" maxlength="2" min="0" max="60" required/>
@@ -210,7 +211,8 @@ window.createGameUI = () => {
                         <tr><th>Remaining</th><th>Scored</th></tr>
                     </thead>
                     <tbody>
-                        <!--<tr class="turn">
+                        <!-- Maybe display all throws and doubles? (D20 = 2x20 & 20D = 2x10 ?) RFC
+                        <tr class="turn">
                             <td>${currentGame.startingPoints}</td>
                             <td>
                                 <span>20</span>
@@ -218,19 +220,37 @@ window.createGameUI = () => {
                                 <span>20</span>
                             </td>
                         </tr>-->
-                        <tr class="turn">
-                            <td>${currentGame.startingPoints}</td>
-                            <td>
-                            ${player.sem == "total" ? `<input class="total" type="number" name="total" maxlength="3" min="0" max="180" required/>` :
-                `           <input class="throw" type="number" name="throw-1" maxlength="2" min="0" max="60" required/>
-                            <input class="throw" type="number" name="throw-2" maxlength="2" min="0" max="60" required/>
-                            <input class="throw" type="number" name="throw-3" maxlength="2" min="0" max="60" required/>`}
-                            <span class="total"></span>
-                            </td>
-                        </tr>
                     </tbody>
                 </table>
             </div>`);
+    });
+    playersRemaining = [];
+    currentGame.turns.forEach((turn)=>{
+        if(turn.type == undefined){
+            playersRemaining[turn.player] = Math.min(playersRemaining[turn.player]||currentGame.startingPoints, turn.over? 0: turn.toClear - turn.score);
+            $('section.game .player[data-id="'+turn.player+'"] tbody').append(`
+            <tr class="turn" data-total="${turn.score}" ${turn.throws.length?` data-throw-0="${turn.throws[0]?turn.throws[0].score:0}" data-throw-1="${turn.throws[1]?turn.throws[1].score:0}" data-throw-2="${turn.throws[2]?turn.throws[2].score:0}"`:''}>
+                <td>${turn.toClear}</td>
+                <td>            
+                    <span class="total">${turn.score}</span>
+                    <svg class="edit pencil" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000" height="1em" width="1em" version="1.1" viewBox="0 0 306.637 306.637" xml:space="preserve"><path d="M12.809,238.52L0,306.637l68.118-12.809l184.277-184.277l-55.309-55.309L12.809,238.52z M60.79,279.943l-41.992,7.896    l7.896-41.992L197.086,75.455l34.096,34.096L60.79,279.943z"></path><path d="M251.329,0l-41.507,41.507l55.308,55.308l41.507-41.507L251.329,0z M231.035,41.507l20.294-20.294l34.095,34.095    L265.13,75.602L231.035,41.507z"></path></svg>
+                </td>
+            </tr>`);
+        }
+    });
+    currentGame.players.forEach((player) => {
+        player = players.filter((pl) => pl.id == player).pop();
+        $('section.game .player[data-id="'+player.id+'"] tbody').append(`
+            <tr class="turn">
+                <td>${playersRemaining[player.id]||currentGame.startingPoints}</td>
+                <td>
+                    ${player.sem == "total" ? `<input class="total" type="number" name="total" maxlength="3" min="0" max="180" required/>` :
+        `           <input class="throw" type="number" name="throw-1" maxlength="2" min="0" max="60" required/>
+                    <input class="throw" type="number" name="throw-2" maxlength="2" min="0" max="60" required/>
+                    <input class="throw" type="number" name="throw-3" maxlength="2" min="0" max="60" required/>`}
+                    <span class="total"></span>
+                </td>
+            </tr>`);
     });
     updateStatistics();
     $("section.game .scoreboard > .player .turn input:visible").filter((i, e) => $(e).val() == "").first().focus();
