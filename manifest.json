@@ -1,0 +1,24 @@
+{
+    "theme_color": "#00bd48",
+    "background_color": "#303030",
+    "icons": [
+        {
+            "purpose": "maskable",
+            "sizes": "512x512",
+            "src": "files/icon512_maskable.png",
+            "type": "image/png"
+        },
+        {
+            "purpose": "any",
+            "sizes": "512x512",
+            "src": "files/icon512_rounded.png",
+            "type": "image/png"
+        }
+    ],
+    "orientation": "any",
+    "display": "standalone",
+    "name": "Dart Assistant",
+    "short_name": "Dart Assist.",
+    "description": "Dart Assistant",
+    "start_url": "."
+}
