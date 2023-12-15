@@ -127,7 +127,7 @@ $(() => {
 
     function buildUI() {
         if(window.dbloaded)window.dbloaded();
-
+        if(!window.players || window.players.length == 0)$('a[href="newGame.html"]').addClass('disabled');
         // Autosave to IndexedDB
         setInterval(saveDB, 15000);
         
